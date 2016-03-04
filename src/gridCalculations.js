@@ -178,7 +178,7 @@ export const insertItems = (grid, items, additionalHeight, containerWidth, minWi
             .update(`height`, () => i.get(`origHeight`)))
         .concat(items)
 
-    return calcGrid(itemsToCalc, additionalHeight, containerWidth, minWidth, offsetLeft, padding = 0, grid.get(`height`) - lastRow.get(`height`))
+    return calcGrid(itemsToCalc, additionalHeight, containerWidth, minWidth, offsetLeft, padding, grid.get(`height`) - lastRow.get(`height`))
         .update(g =>
             g.update(`rows`,
                 r => grid
