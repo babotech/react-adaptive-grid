@@ -31,10 +31,10 @@ class GridState {
     getState() {
         const visibleGrid = calcVisibleGrid(this.grid, this.containerHeight, this.offset, this.more)
 
-        return Map({
+        return {
             offset: visibleGrid.getIn([ `rows`, 0, `top` ]) || 0,
             ...visibleGrid.toObject()
-        })
+        }
     }
 
     updateOffset(offset) {

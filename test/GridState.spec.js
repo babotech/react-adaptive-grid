@@ -14,7 +14,7 @@ describe(`react-adaptive-grid`, () => {
 
         const calcVisibleGridSpy = expect.createSpy()
         const calcGridSpy = expect.createSpy()
-        const insertItems = expect.createSpy()
+        const insertItemsSpy = expect.createSpy()
 
         beforeEach(() => {
             mockery.enable({
@@ -24,7 +24,7 @@ describe(`react-adaptive-grid`, () => {
             mockery.registerMock(`./gridCalculations`, {
                 calcGrid: calcGridSpy,
                 calcVisibleGrid: calcVisibleGridSpy,
-                insertItems: insertItems
+                insertItems: insertItemsSpy
             });
 
             ({default: GridState} = require(`../src/GridState`))
@@ -36,6 +36,7 @@ describe(`react-adaptive-grid`, () => {
 
             calcVisibleGridSpy.reset()
             calcGridSpy.reset()
+            insertItemsSpy.reset()
         })
 
 
@@ -99,11 +100,11 @@ describe(`react-adaptive-grid`, () => {
             }))
 
             expect(gridState.getState())
-                .toEqualImmutable(Map({
+                .toEqual({
                     offset,
                     rows,
                     height
-                }))
+                })
             expect(calcVisibleGridSpy.calls.length).toEqual(1)
         })
 
@@ -128,7 +129,7 @@ describe(`react-adaptive-grid`, () => {
             expect(gridState.more)
                 .toEqual(false)
 
-            expect(insertItems.calls.length).toEqual(1)
+            expect(insertItemsSpy.calls.length).toEqual(1)
         })
     })
 })
