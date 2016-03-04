@@ -1,1 +1,1 @@
-# React Adaptive Grid
+# React Adaptive Grid [![Build Status](https://travis-ci.org/babotech/react-adaptive-grid.svg?branch=master)](https://travis-ci.org/babotech/react-adaptive-grid)
