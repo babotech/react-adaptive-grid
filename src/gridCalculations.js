@@ -26,7 +26,7 @@ const scaleItemsToMinWidth = (items, minWidth) => {
     return items
 }
 
-export const calcGridRow = (top, items, containerWidth, additionalHeight, minWidth = 200, offsetLeft = 0, fullWidth = true) => {
+export const calcGridRow = (top, items, containerWidth, additionalHeight, minWidth, offsetLeft = 0, fullWidth = true) => {
     let extraItems = List()
     const minHeight = items.minBy(item => item.get(`height`)).get(`height`)
 
@@ -156,16 +156,19 @@ export const calcVisibleGrid = (grid, visibleAreaHeight, offset, excludeLast = f
         return acc
     })
 
-    if (excludeLast &&
-        visibleGrid.last() === grid.last()) {
+    let shouldLoad = false
+    if (visibleGrid.get(`rows`).size &&
+        excludeLast &&
+        visibleGrid.getIn([ `rows`, -1 ]) === grid.getIn([ `rows`, -1 ])) {
         const lastHeight = visibleGrid.getIn([ `rows`, -1, `height` ])
 
         visibleGrid = visibleGrid.update(`rows`, r => r.skipLast(1))
 
         visibleGrid = visibleGrid.update(`height`, h => h - lastHeight)
+        shouldLoad = true
     }
 
-    return visibleGrid
+    return visibleGrid.set(`shouldLoad`, shouldLoad)
 }
 
 export const insertItems = (grid, items, additionalHeight, containerWidth, minWidth, offsetLeft, padding = 0) => {

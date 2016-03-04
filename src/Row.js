@@ -1,4 +1,4 @@
-import React, {Component} from 'react'
+import React, {Component, PropTypes} from 'react'
 
 import Item from './Item'
 
@@ -12,7 +12,8 @@ const defaultRowStyle = {
 class Row extends Component {
 
     render() {
-        const {row, offsetLeft} = this.props
+        const {row} = this.props
+        const {offsetLeft} = this.context
 
         const rowStyle = {
             ...defaultRowStyle,
@@ -31,6 +32,10 @@ class Row extends Component {
             </div>
         )
     }
+}
+
+Row.contextTypes = {
+    offsetLeft: PropTypes.number
 }
 
 export default Row

@@ -34,8 +34,9 @@ describe(`react-adaptive-grid`, () => {
                 const containerWidth = 1100
                 const top = 100
                 const additionalHeight = 130
+                const minWidth = 200
 
-                expect(calcGridRow(top, items, containerWidth, additionalHeight))
+                expect(calcGridRow(top, items, containerWidth, additionalHeight, minWidth))
                     .toEqualImmutable(
                         Map({
                             extraItems: List(),
@@ -308,8 +309,9 @@ describe(`react-adaptive-grid`, () => {
 
                 const containerWidth = 1100
                 const additionalHeight = 130
+                const minWidth = 200
 
-                expect(calcGrid(items, additionalHeight, containerWidth))
+                expect(calcGrid(items, additionalHeight, containerWidth, minWidth))
                     .toEqualImmutable(Map({
                         rows: List([
                             Map({
@@ -420,8 +422,9 @@ describe(`react-adaptive-grid`, () => {
 
                 const containerWidth = 600
                 const additionalHeight = 130
+                const minWidth = 200
 
-                expect(calcGrid(items, additionalHeight, containerWidth))
+                expect(calcGrid(items, additionalHeight, containerWidth, minWidth))
                     .toEqualImmutable(
                         Map({
                             rows: List([
@@ -496,6 +499,7 @@ describe(`react-adaptive-grid`, () => {
                                 height: 140
                             })
                         ]),
+                        shouldLoad: false,
                         height: 420
                     }))
             })
@@ -543,6 +547,7 @@ describe(`react-adaptive-grid`, () => {
                                 height: 140
                             })
                         ]),
+                        shouldLoad: false,
                         height: 560
                     }))
             })
@@ -595,6 +600,7 @@ describe(`react-adaptive-grid`, () => {
                                 height: 140
                             })
                         ]),
+                        shouldLoad: false,
                         height: 560
                     }))
             })
@@ -637,6 +643,7 @@ describe(`react-adaptive-grid`, () => {
                                 height: 140
                             })
                         ]),
+                        shouldLoad: true,
                         height: 280
                     }))
             })

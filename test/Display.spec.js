@@ -1,13 +1,13 @@
 /* eslint-disable no-magic-numbers */
 
-import {Map, List} from 'immutable'
 import React, {Component} from 'react'
+
 import ReactDOM from 'react-dom'
 import TestUtils from 'react-addons-test-utils'
 
 import expect from 'expect'
 import mockery from 'mockery'
-import rndoam from 'rndoam'
+import rndoam from 'rndoam/lib/withImmutable'
 
 class GridMock extends Component {
     render() {
@@ -46,7 +46,7 @@ const simulateWindowResize = () => {
     return event
 }
 
-describe(`react-ingrid`, () => {
+describe(`react-adaptive-grid`, () => {
 
     describe(`Display`, () => {
         let Display, setDisplayClientBoundingRect, setContentClientBoundingRect, mountNode
@@ -77,6 +77,7 @@ describe(`react-ingrid`, () => {
                 .andReturn({})
             gridStateMock.updateGrid = expect.createSpy()
             gridStateMock.updateOffset = expect.createSpy()
+            gridStateMock.insertItems = expect.createSpy()
         })
 
         afterEach(() => {
@@ -160,12 +161,14 @@ describe(`react-ingrid`, () => {
                 rows: rndoam.array()
             }
 
+            const offsetLeft = rndoam.number()
+
             gridStateMock
                 .getState
                 .andReturn(state)
 
             const display = TestUtils.renderIntoDocument(
-                <Display />
+                <Display offsetLeft={offsetLeft}/>
             )
 
             const grid = TestUtils.findRenderedComponentWithType(display, GridMock)
@@ -173,7 +176,8 @@ describe(`react-ingrid`, () => {
 
             expect(grid.props)
                 .toEqual({
-                    ...state
+                    ...state,
+                    offsetLeft
                 })
         })
 
@@ -213,7 +217,7 @@ describe(`react-ingrid`, () => {
             restoreContent()
         })
 
-        it(`should update state on window resize`, () => {
+        it(`should update state on window resize`, (done) => {
 
             const items = rndoam.array()
 
@@ -242,20 +246,23 @@ describe(`react-ingrid`, () => {
 
             simulateWindowResize()
 
-            expect(gridStateMock.updateGrid.calls[ 1 ].arguments)
-                .toEqual([
-                    items,
-                    containerWidth,
-                    containerHeight,
-                    offset,
-                    true
-                ])
+            setTimeout(() => {
+                expect(gridStateMock.updateGrid.calls[ 1 ].arguments)
+                    .toEqual([
+                        items,
+                        containerWidth,
+                        containerHeight,
+                        offset,
+                        true
+                    ])
 
-            expect(display.state)
-                .toEqual(state)
+                expect(display.state)
+                    .toEqual(state)
 
-            restoreDisplay()
-            restoreContent()
+                restoreDisplay()
+                restoreContent()
+                done()
+            }, 500)
         })
 
         it(`should remove listener from the window after component was unmount`, () => {
@@ -281,5 +288,116 @@ describe(`react-ingrid`, () => {
 
             expect(spyAddListener.calls[ 0 ].arguments[ 1 ]).toEqual(spyRemoveListener.calls[ 0 ].arguments[ 1 ])
         })
+
+
+        it(`should not call the load method if it has already been called`, () => {
+
+            const props = {
+                items: rndoam.list(100),
+                load: expect.createSpy(),
+                loading: true,
+                more: true
+            }
+
+            gridStateMock
+                .getState
+                .andReturn({
+                    shouldLoad: true
+                })
+
+            TestUtils.renderIntoDocument(
+                <Display {...props} />
+            )
+
+            expect(props.load.calls.length).toEqual(0)
+        })
+
+        it(`should not call the load method if it's no more`, () => {
+
+            const props = {
+                items: rndoam.list(100),
+                load: expect.createSpy(),
+                loading: true,
+                more: false
+            }
+
+            gridStateMock
+                .getState
+                .andReturn({
+                    shouldLoad: true
+                })
+
+            TestUtils.renderIntoDocument(
+                <Display />
+            )
+
+            expect(props.load.calls.length).toEqual(0)
+        })
+
+        it(`should call the load`, () => {
+
+            const props = {
+                items: rndoam.list(100),
+                load: expect.createSpy(),
+                loading: false,
+                more: true
+            }
+
+            gridStateMock
+                .getState
+                .andReturn({
+                    shouldLoad: true
+                })
+
+            TestUtils.renderIntoDocument(
+                <Display {...props} />
+            )
+
+            expect(props.load.calls.length).toEqual(1)
+
+        })
+
+        it(`should insert elements`, () => {
+            const props = {
+                items: rndoam.list(100),
+                load: expect.createSpy(),
+                loading: false,
+                more: true
+            }
+
+            gridStateMock
+                .getState
+                .andReturn({
+                    shouldLoad: true
+                })
+
+            class Container extends Component {
+                constructor() {
+                    super()
+                    this.state = props
+                }
+
+                componentDidMount() {
+                    this.setState({
+                        items: rndoam.list(200)
+                    })
+                }
+
+                render() {
+                    return <Display {...this.state} />
+                }
+            }
+
+            TestUtils.renderIntoDocument(
+                <Container />
+            )
+
+            expect(gridStateMock.insertItems.calls.length).toEqual(1)
+
+            const {arguments: args} = gridStateMock.insertItems.calls[0]
+
+            expect(args[0].size).toEqual(100)
+        })
+
     })
 })

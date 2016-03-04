@@ -10,7 +10,7 @@ expect.extend(expectImmutable)
 describe(`react-adaptive-grid`, () => {
 
     describe(`GridState`, () => {
-        let GridState;
+        let GridState
 
         const calcVisibleGridSpy = expect.createSpy()
         const calcGridSpy = expect.createSpy()

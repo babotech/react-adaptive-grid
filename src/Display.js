@@ -1,8 +1,11 @@
 import React, {Component} from 'react'
 
 import Grid from './Grid'
+import debounce from './throttle'
 import gridStateFactory from './gridStateFactory'
 
+
+const resizeDelay = 500
 const displayStyle = {
     height: `100%`,
     overflowX: `hidden`,
@@ -10,8 +13,6 @@ const displayStyle = {
     position: `relative`,
     width: `100%`
 }
-
-const contentStyle = {}
 
 const getDisplaySize = (inst) => {
     const {top: displayTop, width, height} = inst.getDisplayBoundingClientRect()
@@ -34,12 +35,12 @@ const createScrollListener = inst =>
     }
 
 const createWindowResizeListener = inst => {
-    inst.windowResizeListener = () => {
+    inst.windowResizeListener = debounce(() => {
         const {scrollTop, width, height} = getDisplaySize(inst)
         const {items, more} = inst.props
         inst.gridState.updateGrid(items, width, height, scrollTop, more)
         inst.setState(inst.gridState.getState())
-    }
+    }, resizeDelay)
 
     return inst.windowResizeListener
 }
@@ -61,13 +62,33 @@ class Display extends Component {
         this.gridState.updateGrid(items, width, height, scrollTop, more)
 
         this.setState(this.gridState.getState())
-
         this.display.addEventListener(`scroll`, createScrollListener(this))
         window.addEventListener(`resize`, createWindowResizeListener(this))
     }
 
     componentWillUnmount() {
         window.removeEventListener(`resize`, this.windowResizeListener)
+    }
+
+    componentWillReceiveProps(nextProps) {
+
+        if (nextProps.items.size !== this.props.items.size) {
+
+            const sizeDiff = nextProps.items.size - this.props.items.size
+
+            this.gridState.insertItems(nextProps.items.takeLast(sizeDiff), nextProps.more)
+            this.setState(
+                this.gridState.getState()
+            )
+        }
+    }
+
+    componentWillUpdate(nextProps, nextState) {
+        const {load, loading, more} = nextProps
+        const {shouldLoad} = nextState
+        if (more && !loading && shouldLoad) {
+            load()
+        }
     }
 
     getDisplayBoundingClientRect() {
@@ -80,6 +101,8 @@ class Display extends Component {
 
     render() {
 
+        const {offsetLeft} = this.props
+
         return (
             <div ref={display => {
                 this.display = display
@@ -88,9 +111,9 @@ class Display extends Component {
             >
                 <div ref={content => {
                     this.content = content
-                }} style={contentStyle}
+                }}
                 >
-                    <Grid {...this.state} />
+                    <Grid {...this.state} offsetLeft={offsetLeft}/>
                 </div>
             </div>
         )

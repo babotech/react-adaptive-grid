@@ -1,11 +1,9 @@
-import React, {Component, PropTypes} from 'react'
+import React, {Component} from 'react'
 
 import TestUtils from 'react-addons-test-utils'
 
 import expect from 'expect'
 import mockery from 'mockery'
-import rndoam from 'rndoam/lib/withImmutable'
-
 
 class RowItem extends Component {
     render() {
@@ -14,10 +12,10 @@ class RowItem extends Component {
 }
 
 
-describe(`react-ingrid`, () => {
+describe(`react-adaptive-grid`, () => {
 
     describe(`Grid`, () => {
-        let Grid, GridWithContext
+        let Grid
 
         before(() => {
             mockery.enable({

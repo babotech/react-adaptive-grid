@@ -1,8 +1,9 @@
-import React, {Component} from 'react'
 import {List, Map} from 'immutable'
+import React, {Component, PropTypes} from 'react'
 
 import TestUtils from 'react-addons-test-utils'
 
+import contextify from 'react-contextify'
 import expect from 'expect'
 import mockery from 'mockery'
 
@@ -13,10 +14,10 @@ class ItemMock extends Component {
 }
 
 
-describe(`react-ingrid`, () => {
+describe(`react-adaptive-grid`, () => {
 
     describe(`Row`, () => {
-        let Row
+        let Row, WithContext
 
         before(() => {
             mockery.enable({
@@ -26,6 +27,11 @@ describe(`react-ingrid`, () => {
             mockery.registerMock(`./Item`, ItemMock);
             ({default: Row} = require(`../src/Row`))
 
+            WithContext = contextify({
+                offsetLeft: PropTypes.number
+            }, ({offsetLeft}) => ({
+                offsetLeft
+            }))(Row)
         })
 
         after(() => {
@@ -56,7 +62,7 @@ describe(`react-ingrid`, () => {
             })
         })
 
-        it(`should set height and offsetLeft`, () => {
+        it(`should set height`, () => {
             const height = 100
             const offsetLeft = 100
             const props = {
@@ -69,7 +75,7 @@ describe(`react-ingrid`, () => {
 
             const grid = TestUtils
                 .renderIntoDocument(
-                    <Row {...props} />
+                    <WithContext {...props} />
                 )
 
             const divs = TestUtils.scryRenderedDOMComponentsWithTag(grid, `div`)

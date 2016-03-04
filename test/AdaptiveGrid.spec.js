@@ -1,11 +1,10 @@
 import React, {Component, PropTypes} from 'react'
 
-import {List} from 'immutable'
 import TestUtils from 'react-addons-test-utils'
 
 import expect from 'expect'
 import mockery from 'mockery'
-import rndoam from 'rndoam'
+import rndoam from 'rndoam/lib/withImmutable'
 
 describe(`react-adaptive-grid`, () => {
 
@@ -61,7 +60,9 @@ describe(`react-adaptive-grid`, () => {
                 minWidth: rndoam.number(),
                 padding: rndoam.number(),
                 offsetLeft: rndoam.number(),
-                items: rndoam.array(),
+                items: rndoam.list(),
+                load: rndoam.noop(),
+                loading: false,
                 more: true
             }
 
