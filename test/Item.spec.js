@@ -17,9 +17,11 @@ describe(`react-adaptive-grid`, () => {
 
         const WithContext = contextify({
             ItemComponent: PropTypes.func,
+            additionalHeight: PropTypes.number,
             offsetLeft: PropTypes.number
-        }, ({ItemComponent, offsetLeft}) => ({
+        }, ({ItemComponent, additionalHeight, offsetLeft}) => ({
             ItemComponent,
+            additionalHeight,
             offsetLeft
         }))(Item)
 
@@ -27,6 +29,7 @@ describe(`react-adaptive-grid`, () => {
 
             const props = {
                 ItemComponent: ItemComponentMock,
+                additionalHeight: rndoam.number(),
                 offsetLeft: rndoam.number()
             }
 
@@ -42,7 +45,8 @@ describe(`react-adaptive-grid`, () => {
         it(`should transfer props into the ItemComponent`, () => {
             const props = {
                 ItemComponent: ItemComponentMock,
-                item: rndoam.object()
+                item: rndoam.object(),
+                additionalHeight: rndoam.additionalHeight
             }
 
             const tree = TestUtils.renderIntoDocument(
@@ -52,6 +56,7 @@ describe(`react-adaptive-grid`, () => {
             const item = TestUtils.findRenderedComponentWithType(tree, ItemComponentMock)
 
             expect(item.props.data).toEqual(props.item)
+            expect(item.props.additionalHeight).toEqual(props.additionalHeight)
         })
     })
 })

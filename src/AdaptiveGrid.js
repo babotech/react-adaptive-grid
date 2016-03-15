@@ -6,29 +6,33 @@ import Display from './Display'
 class AdaptiveGrid extends Component {
 
     getChildContext() {
-        const {ItemComponent, offsetLeft} = this.props
+        const {ItemComponent, additionalHeight, offsetLeft} = this.props
 
         return {
             ItemComponent,
+            additionalHeight,
             offsetLeft
         }
     }
 
     render() {
-        const {minWidth, padding, offsetLeft, load, loading, more} = this.props
+        const {additionalHeight, minWidth, padding, offsetLeft, load, loading, more} = this.props
 
         const items = Iterable.isIterable(this.props.items) ? this.props.items : fromJS(this.props.items)
 
+        const displayProps = {
+            additionalHeight,
+            items,
+            minWidth,
+            padding,
+            offsetLeft,
+            load,
+            loading,
+            more
+        }
+
         return (
-            <Display
-                items={items}
-                minWidth={minWidth}
-                padding={padding}
-                offsetLeft={offsetLeft}
-                load={load}
-                loading={loading}
-                more={more}
-            />
+            <Display {...displayProps} />
         )
     }
 }
@@ -43,11 +47,13 @@ AdaptiveGrid.defaultProps = {
 
 AdaptiveGrid.childContextTypes = {
     ItemComponent: PropTypes.func,
+    additionalHeight: PropTypes.number,
     offsetLeft: PropTypes.number
 }
 
 AdaptiveGrid.propTypes = {
     ItemComponent: PropTypes.func.isRequired,
+    additionalHeight: PropTypes.number,
     minWidth: PropTypes.number.isRequired,
     items: PropTypes.oneOfType([ PropTypes.array, PropTypes.object ]).isRequired,
     padding: PropTypes.number,

@@ -33,12 +33,16 @@ describe(`react-adaptive-grid`, () => {
 
         it(`should transfer props into the context`, () => {
             DisplayMock.contextTypes = {
-                ItemComponent: PropTypes.func
+                ItemComponent: PropTypes.func,
+                additionalHeight: PropTypes.number,
+                offsetLeft: PropTypes.number
             }
 
             try {
                 const props = {
-                    ItemComponent: rndoam.noop()
+                    ItemComponent: rndoam.noop(),
+                    additionalHeight: rndoam.number(),
+                    offsetLeft: rndoam.number()
                 }
 
                 const tree = TestUtils.renderIntoDocument(
@@ -57,6 +61,7 @@ describe(`react-adaptive-grid`, () => {
         it(`should transfer props into the Display component`, () => {
             const props = {
                 ItemComponent: rndoam.noop(),
+                additionalHeight: rndoam.number(),
                 minWidth: rndoam.number(),
                 padding: rndoam.number(),
                 offsetLeft: rndoam.number(),

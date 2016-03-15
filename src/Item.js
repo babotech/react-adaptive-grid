@@ -9,7 +9,7 @@ const defaultItemStyle = {
 class Item extends Component {
     render() {
         const {item} = this.props
-        const {ItemComponent, offsetLeft} = this.context
+        const {ItemComponent, additionalHeight, offsetLeft} = this.context
 
         const itemStyle = {
             ...defaultItemStyle,
@@ -18,7 +18,7 @@ class Item extends Component {
 
         return (
             <div style={itemStyle}>
-                <ItemComponent data={item}/>
+                <ItemComponent data={item} additionalHeight={additionalHeight}/>
             </div>
         )
     }
@@ -26,7 +26,8 @@ class Item extends Component {
 
 Item.contextTypes = {
     ItemComponent: PropTypes.func,
-    offsetLeft: PropTypes.number
+    offsetLeft: PropTypes.number,
+    additionalHeight: PropTypes.number
 }
 
 export default Item
