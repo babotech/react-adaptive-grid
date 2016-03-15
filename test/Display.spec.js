@@ -158,7 +158,8 @@ describe(`react-adaptive-grid`, () => {
             const state = {
                 offset: rndoam.number(),
                 height: rndoam.number(),
-                rows: rndoam.array()
+                rows: rndoam.array(),
+                padding: rndoam.number()
             }
 
             const offsetLeft = rndoam.number()

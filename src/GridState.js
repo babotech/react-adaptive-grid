@@ -33,6 +33,7 @@ class GridState {
 
         return {
             offset: visibleGrid.getIn([ `rows`, 0, `top` ]) || 0,
+            padding: this.padding,
             ...visibleGrid.toObject()
         }
     }

@@ -53,7 +53,8 @@ const ItemComponent = ({data}) => {
 
 const defaultProps = {
     ItemComponent,
-    minWidth: 200
+    minWidth: 200,
+    padding: 100
 }
 
 class Container extends Component {

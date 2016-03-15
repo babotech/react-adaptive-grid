@@ -135,7 +135,8 @@
 
 	var defaultProps = {
 	    ItemComponent: ItemComponent,
-	    minWidth: 200
+	    minWidth: 200,
+	    padding: 100
 	};
 
 	var Container = function (_Component) {
@@ -15710,7 +15711,7 @@
 	var _Display2 = _interopRequireDefault(_Display);
 
 	function _interopRequireDefault(obj) {
-	    return obj && obj.__esModule ? obj : { default: obj };
+	    return obj && obj.__esModule ? obj : { "default": obj };
 	}
 
 	function _classCallCheck(instance, Constructor) {
@@ -15765,7 +15766,7 @@
 
 	            var items = _immutable.Iterable.isIterable(this.props.items) ? this.props.items : (0, _immutable.fromJS)(this.props.items);
 
-	            return _react2.default.createElement(_Display2.default, {
+	            return _react2["default"].createElement(_Display2["default"], {
 	                items: items,
 	                minWidth: minWidth,
 	                padding: padding,
@@ -15804,7 +15805,7 @@
 	    load: _react.PropTypes.func
 	};
 
-	exports.default = AdaptiveGrid;
+	exports["default"] = AdaptiveGrid;
 
 /***/ },
 /* 90 */
@@ -15855,7 +15856,7 @@
 	var _gridStateFactory2 = _interopRequireDefault(_gridStateFactory);
 
 	function _interopRequireDefault(obj) {
-	    return obj && obj.__esModule ? obj : { default: obj };
+	    return obj && obj.__esModule ? obj : { "default": obj };
 	}
 
 	function _classCallCheck(instance, Constructor) {
@@ -15918,7 +15919,7 @@
 	};
 
 	var createWindowResizeListener = function createWindowResizeListener(inst) {
-	    inst.windowResizeListener = (0, _throttle2.default)(function () {
+	    inst.windowResizeListener = (0, _throttle2["default"])(function () {
 	        var _getDisplaySize2 = getDisplaySize(inst);
 
 	        var scrollTop = _getDisplaySize2.scrollTop;
@@ -15949,7 +15950,7 @@
 	        var padding = props.padding;
 	        var more = props.more;
 
-	        _this.gridState = (0, _gridStateFactory2.default)({ additionalHeight: additionalHeight, minWidth: minWidth, offsetLeft: offsetLeft, padding: padding, more: more });
+	        _this.gridState = (0, _gridStateFactory2["default"])({ additionalHeight: additionalHeight, minWidth: minWidth, offsetLeft: offsetLeft, padding: padding, more: more });
 
 	        _this.state = _this.gridState.getState();
 	        return _this;
@@ -16020,21 +16021,21 @@
 
 	            var offsetLeft = this.props.offsetLeft;
 
-	            return _react2.default.createElement('div', { ref: function ref(display) {
+	            return _react2["default"].createElement('div', { ref: function ref(display) {
 	                    _this2.display = display;
 	                },
 	                style: displayStyle
-	            }, _react2.default.createElement('div', { ref: function ref(content) {
+	            }, _react2["default"].createElement('div', { ref: function ref(content) {
 	                    _this2.content = content;
 	                }
-	            }, _react2.default.createElement(_Grid2.default, _extends({}, this.state, { offsetLeft: offsetLeft }))));
+	            }, _react2["default"].createElement(_Grid2["default"], _extends({}, this.state, { offsetLeft: offsetLeft }))));
 	        }
 	    }]);
 
 	    return Display;
 	}(_react.Component);
 
-	exports.default = Display;
+	exports["default"] = Display;
 
 /***/ },
 /* 91 */
@@ -16079,7 +16080,7 @@
 	var _Row2 = _interopRequireDefault(_Row);
 
 	function _interopRequireDefault(obj) {
-	    return obj && obj.__esModule ? obj : { default: obj };
+	    return obj && obj.__esModule ? obj : { "default": obj };
 	}
 
 	function _classCallCheck(instance, Constructor) {
@@ -16130,17 +16131,20 @@
 	            var _props$rows = _props.rows;
 	            var rows = _props$rows === undefined ? (0, _immutable.List)() : _props$rows;
 	            var offset = _props.offset;
+	            var padding = _props.padding;
 
 	            var contentStyle = _extends({}, defaultContentStyle, {
-	                height: height
+	                height: height,
+	                paddingLeft: padding,
+	                paddingRight: padding
 	            });
 
 	            var scrollHelperStyle = _extends({}, defaultScrollHelperStyle, {
 	                height: offset
 	            });
 
-	            return _react2.default.createElement('div', { style: contentStyle }, _react2.default.createElement('div', { style: scrollHelperStyle }), rows.map(function (row, index) {
-	                return _react2.default.createElement(_Row2.default, { key: index, row: row });
+	            return _react2["default"].createElement('div', { style: contentStyle }, _react2["default"].createElement('div', { style: scrollHelperStyle }), rows.map(function (row, index) {
+	                return _react2["default"].createElement(_Row2["default"], { key: index, row: row });
 	            }).toArray());
 	        }
 	    }]);
@@ -16148,7 +16152,7 @@
 	    return Grid;
 	}(_react.Component);
 
-	exports.default = Grid;
+	exports["default"] = Grid;
 
 /***/ },
 /* 92 */
@@ -16233,7 +16237,8 @@
 	            var visibleGrid = (0, _gridCalculations.calcVisibleGrid)(this.grid, this.containerHeight, this.offset, this.more);
 
 	            return _extends({
-	                offset: visibleGrid.getIn(['rows', 0, 'top']) || 0
+	                offset: visibleGrid.getIn(['rows', 0, 'top']) || 0,
+	                padding: this.padding
 	            }, visibleGrid.toObject());
 	        }
 	    }, {
@@ -16267,7 +16272,7 @@
 	    return GridState;
 	}();
 
-	exports.default = GridState;
+	exports["default"] = GridState;
 
 /***/ },
 /* 93 */
@@ -16306,7 +16311,7 @@
 	var _react2 = _interopRequireDefault(_react);
 
 	function _interopRequireDefault(obj) {
-	    return obj && obj.__esModule ? obj : { default: obj };
+	    return obj && obj.__esModule ? obj : { "default": obj };
 	}
 
 	function _classCallCheck(instance, Constructor) {
@@ -16354,7 +16359,7 @@
 	                marginLeft: offsetLeft
 	            });
 
-	            return _react2.default.createElement('div', { style: itemStyle }, _react2.default.createElement(ItemComponent, { data: item }));
+	            return _react2["default"].createElement('div', { style: itemStyle }, _react2["default"].createElement(ItemComponent, { data: item }));
 	        }
 	    }]);
 
@@ -16366,7 +16371,7 @@
 	    offsetLeft: _react.PropTypes.number
 	};
 
-	exports.default = Item;
+	exports["default"] = Item;
 
 /***/ },
 /* 94 */
@@ -16409,7 +16414,7 @@
 	var _Item2 = _interopRequireDefault(_Item);
 
 	function _interopRequireDefault(obj) {
-	    return obj && obj.__esModule ? obj : { default: obj };
+	    return obj && obj.__esModule ? obj : { "default": obj };
 	}
 
 	function _classCallCheck(instance, Constructor) {
@@ -16457,8 +16462,8 @@
 	                marginLeft: -offsetLeft
 	            });
 
-	            return _react2.default.createElement('div', { style: rowStyle }, row.get('items').map(function (item, index) {
-	                return _react2.default.createElement(_Item2.default, { key: index, item: item });
+	            return _react2["default"].createElement('div', { style: rowStyle }, row.get('items').map(function (item, index) {
+	                return _react2["default"].createElement(_Item2["default"], { key: index, item: item });
 	            }).toArray());
 	        }
 	    }]);
@@ -16470,7 +16475,7 @@
 	    offsetLeft: _react.PropTypes.number
 	};
 
-	exports.default = Row;
+	exports["default"] = Row;
 
 /***/ },
 /* 95 */
@@ -16588,18 +16593,21 @@
 	    var padding = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
 	    var initialTop = arguments.length <= 6 || arguments[6] === undefined ? 0 : arguments[6];
 
+	    var actualInitialTop = padding + initialTop;
+	    var actualContainerWidth = containerWidth - padding * 2;
+
 	    var width = 0;
-	    var top = padding + initialTop;
+	    var top = actualInitialTop;
 	    var itemsInRow = (0, _immutable.List)();
 	    var rows = (0, _immutable.List)();
 
 	    items.forEach(function (item) {
 	        width += item.get('width');
 
-	        if (width > containerWidth && itemsInRow.size) {
+	        if (width > actualContainerWidth && itemsInRow.size) {
 	            width = item.get('width');
 
-	            var calcGridRowResult = calcGridRow(top, itemsInRow, containerWidth, additionalHeight, minWidth, offsetLeft);
+	            var calcGridRowResult = calcGridRow(top, itemsInRow, actualContainerWidth, additionalHeight, minWidth, offsetLeft);
 
 	            rows = rows.push(calcGridRowResult.get('row'));
 
@@ -16612,7 +16620,7 @@
 	    });
 
 	    while (itemsInRow.size) {
-	        var calcGridRowResult = calcGridRow(top, itemsInRow, containerWidth, additionalHeight, minWidth, offsetLeft);
+	        var calcGridRowResult = calcGridRow(top, itemsInRow, actualContainerWidth, additionalHeight, minWidth, offsetLeft);
 	        rows = rows.push(calcGridRowResult.get('row'));
 
 	        top += calcGridRowResult.getIn(['row', 'height']);
@@ -16631,7 +16639,7 @@
 	                });
 	            });
 
-	            var updatedRow = calcGridRow(top, origItems, containerWidth, additionalHeight, minWidth, offsetLeft, false).get('row');
+	            var updatedRow = calcGridRow(top, origItems, actualContainerWidth, additionalHeight, minWidth, offsetLeft, false).get('row');
 
 	            top += updatedRow.get('height');
 	            return updatedRow;
@@ -16641,7 +16649,7 @@
 	        rows: rows,
 	        height: rows.reduce(function (acc, item) {
 	            return acc + item.get('height');
-	        }, 0) + initialTop
+	        }, 0) + actualInitialTop
 	    });
 	};
 
@@ -16723,7 +16731,7 @@
 	var _GridState2 = _interopRequireDefault(_GridState);
 
 	function _interopRequireDefault(obj) {
-	  return obj && obj.__esModule ? obj : { default: obj };
+	  return obj && obj.__esModule ? obj : { "default": obj };
 	}
 
 	var gridStateFactory = function gridStateFactory() {
@@ -16731,10 +16739,10 @@
 	    args[_key] = arguments[_key];
 	  }
 
-	  return new (Function.prototype.bind.apply(_GridState2.default, [null].concat(args)))();
+	  return new (Function.prototype.bind.apply(_GridState2["default"], [null].concat(args)))();
 	};
 
-	exports.default = gridStateFactory;
+	exports["default"] = gridStateFactory;
 
 /***/ },
 /* 97 */
@@ -16751,12 +16759,12 @@
 	Object.defineProperty(exports, 'default', {
 	  enumerable: true,
 	  get: function get() {
-	    return _interopRequireDefault(_AdaptiveGrid).default;
+	    return _interopRequireDefault(_AdaptiveGrid)["default"];
 	  }
 	});
 
 	function _interopRequireDefault(obj) {
-	  return obj && obj.__esModule ? obj : { default: obj };
+	  return obj && obj.__esModule ? obj : { "default": obj };
 	}
 
 /***/ },
@@ -16769,7 +16777,7 @@
 	    value: true
 	});
 	var debounce = function debounce(func, wait) {
-	    var timeout = undefined;
+	    var timeout = void 0;
 	    return function () {
 	        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
 	            args[_key] = arguments[_key];
@@ -16784,7 +16792,7 @@
 	    };
 	};
 
-	exports.default = debounce;
+	exports["default"] = debounce;
 
 /***/ },
 /* 99 */

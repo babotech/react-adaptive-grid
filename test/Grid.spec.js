@@ -62,5 +62,23 @@ describe(`react-adaptive-grid`, () => {
 
             expect(divs[0].style.height).toEqual(`${props.height}px`)
         })
+
+        it(`should set left padding of the content area`, () => {
+            const props = {
+                padding: 100
+            }
+
+            const grid = TestUtils
+                .renderIntoDocument(
+                    <Grid {...props} />
+                )
+
+            const divs = TestUtils.scryRenderedDOMComponentsWithTag(grid, `div`)
+
+            const {paddingLeft, paddingRight} = divs[0].style
+
+            expect(paddingLeft).toEqual(`${props.padding}px`)
+            expect(paddingRight).toEqual(`${props.padding}px`)
+        })
     })
 })

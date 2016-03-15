@@ -85,7 +85,8 @@ describe(`react-adaptive-grid`, () => {
         })
 
         it(`should get initial state`, () => {
-            const gridState = new GridState()
+            const padding = rndoam.number()
+            const gridState = new GridState({padding})
             const offset = rndoam.number()
             const height = rndoam.number()
             const rows = List([
@@ -103,7 +104,8 @@ describe(`react-adaptive-grid`, () => {
                 .toEqual({
                     offset,
                     rows,
-                    height
+                    height,
+                    padding
                 })
             expect(calcVisibleGridSpy.calls.length).toEqual(1)
         })

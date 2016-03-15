@@ -463,6 +463,58 @@ describe(`react-adaptive-grid`, () => {
                         })
                     )
             })
+
+            it(`should calculate grid taking into account padding`, () => {
+                const items = List([
+                    Map({
+                        height: 100,
+                        width: 100
+                    }),
+                    Map({
+                        height: 100,
+                        width: 100
+                    })
+                ])
+
+                const additionalHeight = 0
+                const containerWidth = 300
+                const padding = 100
+                const minWidth = 100
+                const offsetLeft = 0
+
+                expect(calcGrid(items, additionalHeight, containerWidth, minWidth, offsetLeft, padding))
+                    .toEqualImmutable(
+                        Map({
+                            rows: List([
+                                Map({
+                                    items: List([
+                                        Map({
+                                            origHeight: 100,
+                                            origWidth: 100,
+                                            height: 100,
+                                            width: 100
+                                        })
+                                    ]),
+                                    top: 100,
+                                    height: 100
+                                }),
+                                Map({
+                                    items: List([
+                                        Map({
+                                            origHeight: 100,
+                                            origWidth: 100,
+                                            height: 100,
+                                            width: 100
+                                        })
+                                    ]),
+                                    top: 200,
+                                    height: 100
+                                })
+                            ]),
+                            height: 300
+                        })
+                    )
+            })
         })
 
         describe(`calcVisibleGrid->`, () => {

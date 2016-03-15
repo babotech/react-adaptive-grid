@@ -22,12 +22,15 @@ class Grid extends Component {
         const {
             height,
             rows = List(),
-            offset
+            offset,
+            padding
             } = this.props
 
         const contentStyle = {
             ...defaultContentStyle,
-            height
+            height,
+            paddingLeft: padding,
+            paddingRight: padding
         }
 
         const scrollHelperStyle = {
