@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 
 import AdaptiveGrid from '../../lib'
 import ReactDOM from 'react-dom'
-
+import {fromJS} from 'immutable'
 import rndoam from 'rndoam'
 
 let i = 0
@@ -10,26 +10,27 @@ const colors = [ `039BE5`, `FF5722`, `673AB7`, `FFF176`, `FF3D00` ]
 const chunkSize = 100
 const max = 500
 const generateItems = () =>
-    rndoam.collection({
+    fromJS(rndoam.collection({
         id: () => i++,
         color: () => colors[ rndoam.number(0, 4) ],
         width: () => rndoam.number(100, 400),
         height: () => rndoam.number(100, 400)
-    }, chunkSize)
+    }, chunkSize))
 
 const items = generateItems()
 
-const ItemComponent = ({data}) => {
+const ItemComponent = ({data, width, height}) => {
+
     const backDropStyle = {
         display: `flex`,
-        width: data.get(`width`),
-        height: data.get(`height`),
+        width,
+        height,
         backgroundColor: `#${data.get(`color`)}`
     }
     const originalSquare = {
         display: `flex`,
-        width: data.get(`origWidth`),
-        height: data.get(`origHeight`),
+        width: data.get(`width`),
+        height: data.get(`height`),
         maxWidth: `100%`,
         maxHeight: `100%`,
         backgroundColor: `#FFFFFF`,
@@ -45,7 +46,7 @@ const ItemComponent = ({data}) => {
     return (
         <div style={backDropStyle}>
             <div style={originalSquare}>
-                {`${data.get(`origWidth`)}x${data.get(`origHeight`)}`}
+                {`${data.get(`width`)}x${data.get(`height`)}`}
             </div>
         </div>
     )

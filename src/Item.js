@@ -1,3 +1,4 @@
+import {List, Map} from 'immutable'
 import React, {Component, PropTypes} from 'react'
 
 const defaultItemStyle = {
@@ -6,19 +7,30 @@ const defaultItemStyle = {
     marginLeft: 0
 }
 
+const getDataPridicate = item => i => item.get(`id`) === i.get(`id`)
+
 class Item extends Component {
     render() {
-        const {item} = this.props
-        const {ItemComponent, additionalHeight, offsetLeft} = this.context
+        const {item = Map()} = this.props
+        const {ItemComponent, additionalHeight, items, offsetLeft} = this.context
 
         const itemStyle = {
             ...defaultItemStyle,
             marginLeft: offsetLeft
         }
 
+        const data = items.find(getDataPridicate(item))
+
+        const props = {
+            additionalHeight,
+            data,
+            height: item.get(`height`),
+            width: item.get(`width`)
+        }
+
         return (
             <div style={itemStyle}>
-                <ItemComponent data={item} additionalHeight={additionalHeight}/>
+                <ItemComponent {...props} />
             </div>
         )
     }
@@ -27,6 +39,7 @@ class Item extends Component {
 Item.contextTypes = {
     ItemComponent: PropTypes.func,
     offsetLeft: PropTypes.number,
+    items: PropTypes.instanceOf(List),
     additionalHeight: PropTypes.number
 }
 

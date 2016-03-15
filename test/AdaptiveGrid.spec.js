@@ -35,6 +35,7 @@ describe(`react-adaptive-grid`, () => {
             DisplayMock.contextTypes = {
                 ItemComponent: PropTypes.func,
                 additionalHeight: PropTypes.number,
+                items: PropTypes.object,
                 offsetLeft: PropTypes.number
             }
 
@@ -42,6 +43,7 @@ describe(`react-adaptive-grid`, () => {
                 const props = {
                     ItemComponent: rndoam.noop(),
                     additionalHeight: rndoam.number(),
+                    items: rndoam.list(),
                     offsetLeft: rndoam.number()
                 }
 

@@ -50,7 +50,7 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _react = __webpack_require__(18);
+	var _react = __webpack_require__(19);
 
 	var _react2 = _interopRequireDefault(_react);
 
@@ -61,6 +61,8 @@
 	var _reactDom = __webpack_require__(113);
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _immutable = __webpack_require__(17);
 
 	var _rndoam = __webpack_require__(175);
 
@@ -79,7 +81,7 @@
 	var chunkSize = 100;
 	var max = 500;
 	var generateItems = function generateItems() {
-	    return _rndoam2.default.collection({
+	    return (0, _immutable.fromJS)(_rndoam2.default.collection({
 	        id: function id() {
 	            return i++;
 	        },
@@ -92,24 +94,27 @@
 	        height: function height() {
 	            return _rndoam2.default.number(100, 400);
 	        }
-	    }, chunkSize);
+	    }, chunkSize));
 	};
 
 	var items = generateItems();
 
 	var ItemComponent = function ItemComponent(_ref) {
 	    var data = _ref.data;
+	    var width = _ref.width;
+	    var height = _ref.height;
+
 
 	    var backDropStyle = {
 	        display: 'flex',
-	        width: data.get('width'),
-	        height: data.get('height'),
+	        width: width,
+	        height: height,
 	        backgroundColor: '#' + data.get('color')
 	    };
 	    var originalSquare = {
 	        display: 'flex',
-	        width: data.get('origWidth'),
-	        height: data.get('origHeight'),
+	        width: data.get('width'),
+	        height: data.get('height'),
 	        maxWidth: '100%',
 	        maxHeight: '100%',
 	        backgroundColor: '#FFFFFF',
@@ -128,7 +133,7 @@
 	        _react2.default.createElement(
 	            'div',
 	            { style: originalSquare },
-	            data.get('origWidth') + 'x' + data.get('origHeight')
+	            data.get('width') + 'x' + data.get('height')
 	        )
 	    );
 	};
@@ -431,8 +436,8 @@
 	var ReactDOMFeatureFlags = __webpack_require__(66);
 	var ReactElement = __webpack_require__(6);
 	var ReactEmptyComponentRegistry = __webpack_require__(73);
-	var ReactInstanceHandles = __webpack_require__(17);
-	var ReactInstanceMap = __webpack_require__(22);
+	var ReactInstanceHandles = __webpack_require__(18);
+	var ReactInstanceMap = __webpack_require__(23);
 	var ReactMarkupChecksum = __webpack_require__(76);
 	var ReactPerf = __webpack_require__(7);
 	var ReactReconciler = __webpack_require__(15);
@@ -440,7 +445,7 @@
 	var ReactUpdates = __webpack_require__(8);
 
 	var assign = __webpack_require__(2);
-	var emptyObject = __webpack_require__(19);
+	var emptyObject = __webpack_require__(20);
 	var containsNode = __webpack_require__(54);
 	var instantiateReactComponent = __webpack_require__(47);
 	var invariant = __webpack_require__(1);
@@ -1904,7 +1909,7 @@
 
 	'use strict';
 
-	var keyMirror = __webpack_require__(24);
+	var keyMirror = __webpack_require__(25);
 
 	var PropagationPhases = keyMirror({ bubbled: null, captured: null });
 
@@ -2721,941 +2726,6 @@
 
 /***/ },
 /* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactInstanceHandles
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	var ReactRootIndex = __webpack_require__(81);
-
-	var invariant = __webpack_require__(1);
-
-	var SEPARATOR = '.';
-	var SEPARATOR_LENGTH = SEPARATOR.length;
-
-	/**
-	 * Maximum depth of traversals before we consider the possibility of a bad ID.
-	 */
-	var MAX_TREE_DEPTH = 10000;
-
-	/**
-	 * Creates a DOM ID prefix to use when mounting React components.
-	 *
-	 * @param {number} index A unique integer
-	 * @return {string} React root ID.
-	 * @internal
-	 */
-	function getReactRootIDString(index) {
-	  return SEPARATOR + index.toString(36);
-	}
-
-	/**
-	 * Checks if a character in the supplied ID is a separator or the end.
-	 *
-	 * @param {string} id A React DOM ID.
-	 * @param {number} index Index of the character to check.
-	 * @return {boolean} True if the character is a separator or end of the ID.
-	 * @private
-	 */
-	function isBoundary(id, index) {
-	  return id.charAt(index) === SEPARATOR || index === id.length;
-	}
-
-	/**
-	 * Checks if the supplied string is a valid React DOM ID.
-	 *
-	 * @param {string} id A React DOM ID, maybe.
-	 * @return {boolean} True if the string is a valid React DOM ID.
-	 * @private
-	 */
-	function isValidID(id) {
-	  return id === '' || id.charAt(0) === SEPARATOR && id.charAt(id.length - 1) !== SEPARATOR;
-	}
-
-	/**
-	 * Checks if the first ID is an ancestor of or equal to the second ID.
-	 *
-	 * @param {string} ancestorID
-	 * @param {string} descendantID
-	 * @return {boolean} True if `ancestorID` is an ancestor of `descendantID`.
-	 * @internal
-	 */
-	function isAncestorIDOf(ancestorID, descendantID) {
-	  return descendantID.indexOf(ancestorID) === 0 && isBoundary(descendantID, ancestorID.length);
-	}
-
-	/**
-	 * Gets the parent ID of the supplied React DOM ID, `id`.
-	 *
-	 * @param {string} id ID of a component.
-	 * @return {string} ID of the parent, or an empty string.
-	 * @private
-	 */
-	function getParentID(id) {
-	  return id ? id.substr(0, id.lastIndexOf(SEPARATOR)) : '';
-	}
-
-	/**
-	 * Gets the next DOM ID on the tree path from the supplied `ancestorID` to the
-	 * supplied `destinationID`. If they are equal, the ID is returned.
-	 *
-	 * @param {string} ancestorID ID of an ancestor node of `destinationID`.
-	 * @param {string} destinationID ID of the destination node.
-	 * @return {string} Next ID on the path from `ancestorID` to `destinationID`.
-	 * @private
-	 */
-	function getNextDescendantID(ancestorID, destinationID) {
-	  !(isValidID(ancestorID) && isValidID(destinationID)) ?  true ? invariant(false, 'getNextDescendantID(%s, %s): Received an invalid React DOM ID.', ancestorID, destinationID) : invariant(false) : undefined;
-	  !isAncestorIDOf(ancestorID, destinationID) ?  true ? invariant(false, 'getNextDescendantID(...): React has made an invalid assumption about ' + 'the DOM hierarchy. Expected `%s` to be an ancestor of `%s`.', ancestorID, destinationID) : invariant(false) : undefined;
-	  if (ancestorID === destinationID) {
-	    return ancestorID;
-	  }
-	  // Skip over the ancestor and the immediate separator. Traverse until we hit
-	  // another separator or we reach the end of `destinationID`.
-	  var start = ancestorID.length + SEPARATOR_LENGTH;
-	  var i;
-	  for (i = start; i < destinationID.length; i++) {
-	    if (isBoundary(destinationID, i)) {
-	      break;
-	    }
-	  }
-	  return destinationID.substr(0, i);
-	}
-
-	/**
-	 * Gets the nearest common ancestor ID of two IDs.
-	 *
-	 * Using this ID scheme, the nearest common ancestor ID is the longest common
-	 * prefix of the two IDs that immediately preceded a "marker" in both strings.
-	 *
-	 * @param {string} oneID
-	 * @param {string} twoID
-	 * @return {string} Nearest common ancestor ID, or the empty string if none.
-	 * @private
-	 */
-	function getFirstCommonAncestorID(oneID, twoID) {
-	  var minLength = Math.min(oneID.length, twoID.length);
-	  if (minLength === 0) {
-	    return '';
-	  }
-	  var lastCommonMarkerIndex = 0;
-	  // Use `<=` to traverse until the "EOL" of the shorter string.
-	  for (var i = 0; i <= minLength; i++) {
-	    if (isBoundary(oneID, i) && isBoundary(twoID, i)) {
-	      lastCommonMarkerIndex = i;
-	    } else if (oneID.charAt(i) !== twoID.charAt(i)) {
-	      break;
-	    }
-	  }
-	  var longestCommonID = oneID.substr(0, lastCommonMarkerIndex);
-	  !isValidID(longestCommonID) ?  true ? invariant(false, 'getFirstCommonAncestorID(%s, %s): Expected a valid React DOM ID: %s', oneID, twoID, longestCommonID) : invariant(false) : undefined;
-	  return longestCommonID;
-	}
-
-	/**
-	 * Traverses the parent path between two IDs (either up or down). The IDs must
-	 * not be the same, and there must exist a parent path between them. If the
-	 * callback returns `false`, traversal is stopped.
-	 *
-	 * @param {?string} start ID at which to start traversal.
-	 * @param {?string} stop ID at which to end traversal.
-	 * @param {function} cb Callback to invoke each ID with.
-	 * @param {*} arg Argument to invoke the callback with.
-	 * @param {?boolean} skipFirst Whether or not to skip the first node.
-	 * @param {?boolean} skipLast Whether or not to skip the last node.
-	 * @private
-	 */
-	function traverseParentPath(start, stop, cb, arg, skipFirst, skipLast) {
-	  start = start || '';
-	  stop = stop || '';
-	  !(start !== stop) ?  true ? invariant(false, 'traverseParentPath(...): Cannot traverse from and to the same ID, `%s`.', start) : invariant(false) : undefined;
-	  var traverseUp = isAncestorIDOf(stop, start);
-	  !(traverseUp || isAncestorIDOf(start, stop)) ?  true ? invariant(false, 'traverseParentPath(%s, %s, ...): Cannot traverse from two IDs that do ' + 'not have a parent path.', start, stop) : invariant(false) : undefined;
-	  // Traverse from `start` to `stop` one depth at a time.
-	  var depth = 0;
-	  var traverse = traverseUp ? getParentID : getNextDescendantID;
-	  for (var id = start;; /* until break */id = traverse(id, stop)) {
-	    var ret;
-	    if ((!skipFirst || id !== start) && (!skipLast || id !== stop)) {
-	      ret = cb(id, traverseUp, arg);
-	    }
-	    if (ret === false || id === stop) {
-	      // Only break //after// visiting `stop`.
-	      break;
-	    }
-	    !(depth++ < MAX_TREE_DEPTH) ?  true ? invariant(false, 'traverseParentPath(%s, %s, ...): Detected an infinite loop while ' + 'traversing the React DOM ID tree. This may be due to malformed IDs: %s', start, stop, id) : invariant(false) : undefined;
-	  }
-	}
-
-	/**
-	 * Manages the IDs assigned to DOM representations of React components. This
-	 * uses a specific scheme in order to traverse the DOM efficiently (e.g. in
-	 * order to simulate events).
-	 *
-	 * @internal
-	 */
-	var ReactInstanceHandles = {
-
-	  /**
-	   * Constructs a React root ID
-	   * @return {string} A React root ID.
-	   */
-	  createReactRootID: function () {
-	    return getReactRootIDString(ReactRootIndex.createReactRootIndex());
-	  },
-
-	  /**
-	   * Constructs a React ID by joining a root ID with a name.
-	   *
-	   * @param {string} rootID Root ID of a parent component.
-	   * @param {string} name A component's name (as flattened children).
-	   * @return {string} A React ID.
-	   * @internal
-	   */
-	  createReactID: function (rootID, name) {
-	    return rootID + name;
-	  },
-
-	  /**
-	   * Gets the DOM ID of the React component that is the root of the tree that
-	   * contains the React component with the supplied DOM ID.
-	   *
-	   * @param {string} id DOM ID of a React component.
-	   * @return {?string} DOM ID of the React component that is the root.
-	   * @internal
-	   */
-	  getReactRootIDFromNodeID: function (id) {
-	    if (id && id.charAt(0) === SEPARATOR && id.length > 1) {
-	      var index = id.indexOf(SEPARATOR, 1);
-	      return index > -1 ? id.substr(0, index) : id;
-	    }
-	    return null;
-	  },
-
-	  /**
-	   * Traverses the ID hierarchy and invokes the supplied `cb` on any IDs that
-	   * should would receive a `mouseEnter` or `mouseLeave` event.
-	   *
-	   * NOTE: Does not invoke the callback on the nearest common ancestor because
-	   * nothing "entered" or "left" that element.
-	   *
-	   * @param {string} leaveID ID being left.
-	   * @param {string} enterID ID being entered.
-	   * @param {function} cb Callback to invoke on each entered/left ID.
-	   * @param {*} upArg Argument to invoke the callback with on left IDs.
-	   * @param {*} downArg Argument to invoke the callback with on entered IDs.
-	   * @internal
-	   */
-	  traverseEnterLeave: function (leaveID, enterID, cb, upArg, downArg) {
-	    var ancestorID = getFirstCommonAncestorID(leaveID, enterID);
-	    if (ancestorID !== leaveID) {
-	      traverseParentPath(leaveID, ancestorID, cb, upArg, false, true);
-	    }
-	    if (ancestorID !== enterID) {
-	      traverseParentPath(ancestorID, enterID, cb, downArg, true, false);
-	    }
-	  },
-
-	  /**
-	   * Simulates the traversal of a two-phase, capture/bubble event dispatch.
-	   *
-	   * NOTE: This traversal happens on IDs without touching the DOM.
-	   *
-	   * @param {string} targetID ID of the target node.
-	   * @param {function} cb Callback to invoke.
-	   * @param {*} arg Argument to invoke the callback with.
-	   * @internal
-	   */
-	  traverseTwoPhase: function (targetID, cb, arg) {
-	    if (targetID) {
-	      traverseParentPath('', targetID, cb, arg, true, false);
-	      traverseParentPath(targetID, '', cb, arg, false, true);
-	    }
-	  },
-
-	  /**
-	   * Same as `traverseTwoPhase` but skips the `targetID`.
-	   */
-	  traverseTwoPhaseSkipTarget: function (targetID, cb, arg) {
-	    if (targetID) {
-	      traverseParentPath('', targetID, cb, arg, true, true);
-	      traverseParentPath(targetID, '', cb, arg, true, true);
-	    }
-	  },
-
-	  /**
-	   * Traverse a node ID, calling the supplied `cb` for each ancestor ID. For
-	   * example, passing `.0.$row-0.1` would result in `cb` getting called
-	   * with `.0`, `.0.$row-0`, and `.0.$row-0.1`.
-	   *
-	   * NOTE: This traversal happens on IDs without touching the DOM.
-	   *
-	   * @param {string} targetID ID of the target node.
-	   * @param {function} cb Callback to invoke.
-	   * @param {*} arg Argument to invoke the callback with.
-	   * @internal
-	   */
-	  traverseAncestors: function (targetID, cb, arg) {
-	    traverseParentPath('', targetID, cb, arg, true, false);
-	  },
-
-	  getFirstCommonAncestorID: getFirstCommonAncestorID,
-
-	  /**
-	   * Exposed for unit testing.
-	   * @private
-	   */
-	  _getNextDescendantID: getNextDescendantID,
-
-	  isAncestorIDOf: isAncestorIDOf,
-
-	  SEPARATOR: SEPARATOR
-
-	};
-
-	module.exports = ReactInstanceHandles;
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = __webpack_require__(125);
-
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule emptyObject
-	 */
-
-	'use strict';
-
-	var emptyObject = {};
-
-	if (true) {
-	  Object.freeze(emptyObject);
-	}
-
-	module.exports = emptyObject;
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule EventPluginHub
-	 */
-
-	'use strict';
-
-	var EventPluginRegistry = __webpack_require__(61);
-	var EventPluginUtils = __webpack_require__(122);
-	var ReactErrorUtils = __webpack_require__(74);
-
-	var accumulateInto = __webpack_require__(83);
-	var forEachAccumulated = __webpack_require__(84);
-	var invariant = __webpack_require__(1);
-	var warning = __webpack_require__(3);
-
-	/**
-	 * Internal store for event listeners
-	 */
-	var listenerBank = {};
-
-	/**
-	 * Internal queue of events that have accumulated their dispatches and are
-	 * waiting to have their dispatches executed.
-	 */
-	var eventQueue = null;
-
-	/**
-	 * Dispatches an event and releases it back into the pool, unless persistent.
-	 *
-	 * @param {?object} event Synthetic event to be dispatched.
-	 * @param {boolean} simulated If the event is simulated (changes exn behavior)
-	 * @private
-	 */
-	var executeDispatchesAndRelease = function (event, simulated) {
-	  if (event) {
-	    EventPluginUtils.executeDispatchesInOrder(event, simulated);
-
-	    if (!event.isPersistent()) {
-	      event.constructor.release(event);
-	    }
-	  }
-	};
-	var executeDispatchesAndReleaseSimulated = function (e) {
-	  return executeDispatchesAndRelease(e, true);
-	};
-	var executeDispatchesAndReleaseTopLevel = function (e) {
-	  return executeDispatchesAndRelease(e, false);
-	};
-
-	/**
-	 * - `InstanceHandle`: [required] Module that performs logical traversals of DOM
-	 *   hierarchy given ids of the logical DOM elements involved.
-	 */
-	var InstanceHandle = null;
-
-	function validateInstanceHandle() {
-	  var valid = InstanceHandle && InstanceHandle.traverseTwoPhase && InstanceHandle.traverseEnterLeave;
-	   true ? warning(valid, 'InstanceHandle not injected before use!') : undefined;
-	}
-
-	/**
-	 * This is a unified interface for event plugins to be installed and configured.
-	 *
-	 * Event plugins can implement the following properties:
-	 *
-	 *   `extractEvents` {function(string, DOMEventTarget, string, object): *}
-	 *     Required. When a top-level event is fired, this method is expected to
-	 *     extract synthetic events that will in turn be queued and dispatched.
-	 *
-	 *   `eventTypes` {object}
-	 *     Optional, plugins that fire events must publish a mapping of registration
-	 *     names that are used to register listeners. Values of this mapping must
-	 *     be objects that contain `registrationName` or `phasedRegistrationNames`.
-	 *
-	 *   `executeDispatch` {function(object, function, string)}
-	 *     Optional, allows plugins to override how an event gets dispatched. By
-	 *     default, the listener is simply invoked.
-	 *
-	 * Each plugin that is injected into `EventsPluginHub` is immediately operable.
-	 *
-	 * @public
-	 */
-	var EventPluginHub = {
-
-	  /**
-	   * Methods for injecting dependencies.
-	   */
-	  injection: {
-
-	    /**
-	     * @param {object} InjectedMount
-	     * @public
-	     */
-	    injectMount: EventPluginUtils.injection.injectMount,
-
-	    /**
-	     * @param {object} InjectedInstanceHandle
-	     * @public
-	     */
-	    injectInstanceHandle: function (InjectedInstanceHandle) {
-	      InstanceHandle = InjectedInstanceHandle;
-	      if (true) {
-	        validateInstanceHandle();
-	      }
-	    },
-
-	    getInstanceHandle: function () {
-	      if (true) {
-	        validateInstanceHandle();
-	      }
-	      return InstanceHandle;
-	    },
-
-	    /**
-	     * @param {array} InjectedEventPluginOrder
-	     * @public
-	     */
-	    injectEventPluginOrder: EventPluginRegistry.injectEventPluginOrder,
-
-	    /**
-	     * @param {object} injectedNamesToPlugins Map from names to plugin modules.
-	     */
-	    injectEventPluginsByName: EventPluginRegistry.injectEventPluginsByName
-
-	  },
-
-	  eventNameDispatchConfigs: EventPluginRegistry.eventNameDispatchConfigs,
-
-	  registrationNameModules: EventPluginRegistry.registrationNameModules,
-
-	  /**
-	   * Stores `listener` at `listenerBank[registrationName][id]`. Is idempotent.
-	   *
-	   * @param {string} id ID of the DOM element.
-	   * @param {string} registrationName Name of listener (e.g. `onClick`).
-	   * @param {?function} listener The callback to store.
-	   */
-	  putListener: function (id, registrationName, listener) {
-	    !(typeof listener === 'function') ?  true ? invariant(false, 'Expected %s listener to be a function, instead got type %s', registrationName, typeof listener) : invariant(false) : undefined;
-
-	    var bankForRegistrationName = listenerBank[registrationName] || (listenerBank[registrationName] = {});
-	    bankForRegistrationName[id] = listener;
-
-	    var PluginModule = EventPluginRegistry.registrationNameModules[registrationName];
-	    if (PluginModule && PluginModule.didPutListener) {
-	      PluginModule.didPutListener(id, registrationName, listener);
-	    }
-	  },
-
-	  /**
-	   * @param {string} id ID of the DOM element.
-	   * @param {string} registrationName Name of listener (e.g. `onClick`).
-	   * @return {?function} The stored callback.
-	   */
-	  getListener: function (id, registrationName) {
-	    var bankForRegistrationName = listenerBank[registrationName];
-	    return bankForRegistrationName && bankForRegistrationName[id];
-	  },
-
-	  /**
-	   * Deletes a listener from the registration bank.
-	   *
-	   * @param {string} id ID of the DOM element.
-	   * @param {string} registrationName Name of listener (e.g. `onClick`).
-	   */
-	  deleteListener: function (id, registrationName) {
-	    var PluginModule = EventPluginRegistry.registrationNameModules[registrationName];
-	    if (PluginModule && PluginModule.willDeleteListener) {
-	      PluginModule.willDeleteListener(id, registrationName);
-	    }
-
-	    var bankForRegistrationName = listenerBank[registrationName];
-	    // TODO: This should never be null -- when is it?
-	    if (bankForRegistrationName) {
-	      delete bankForRegistrationName[id];
-	    }
-	  },
-
-	  /**
-	   * Deletes all listeners for the DOM element with the supplied ID.
-	   *
-	   * @param {string} id ID of the DOM element.
-	   */
-	  deleteAllListeners: function (id) {
-	    for (var registrationName in listenerBank) {
-	      if (!listenerBank[registrationName][id]) {
-	        continue;
-	      }
-
-	      var PluginModule = EventPluginRegistry.registrationNameModules[registrationName];
-	      if (PluginModule && PluginModule.willDeleteListener) {
-	        PluginModule.willDeleteListener(id, registrationName);
-	      }
-
-	      delete listenerBank[registrationName][id];
-	    }
-	  },
-
-	  /**
-	   * Allows registered plugins an opportunity to extract events from top-level
-	   * native browser events.
-	   *
-	   * @param {string} topLevelType Record from `EventConstants`.
-	   * @param {DOMEventTarget} topLevelTarget The listening component root node.
-	   * @param {string} topLevelTargetID ID of `topLevelTarget`.
-	   * @param {object} nativeEvent Native browser event.
-	   * @return {*} An accumulation of synthetic events.
-	   * @internal
-	   */
-	  extractEvents: function (topLevelType, topLevelTarget, topLevelTargetID, nativeEvent, nativeEventTarget) {
-	    var events;
-	    var plugins = EventPluginRegistry.plugins;
-	    for (var i = 0; i < plugins.length; i++) {
-	      // Not every plugin in the ordering may be loaded at runtime.
-	      var possiblePlugin = plugins[i];
-	      if (possiblePlugin) {
-	        var extractedEvents = possiblePlugin.extractEvents(topLevelType, topLevelTarget, topLevelTargetID, nativeEvent, nativeEventTarget);
-	        if (extractedEvents) {
-	          events = accumulateInto(events, extractedEvents);
-	        }
-	      }
-	    }
-	    return events;
-	  },
-
-	  /**
-	   * Enqueues a synthetic event that should be dispatched when
-	   * `processEventQueue` is invoked.
-	   *
-	   * @param {*} events An accumulation of synthetic events.
-	   * @internal
-	   */
-	  enqueueEvents: function (events) {
-	    if (events) {
-	      eventQueue = accumulateInto(eventQueue, events);
-	    }
-	  },
-
-	  /**
-	   * Dispatches all synthetic events on the event queue.
-	   *
-	   * @internal
-	   */
-	  processEventQueue: function (simulated) {
-	    // Set `eventQueue` to null before processing it so that we can tell if more
-	    // events get enqueued while processing.
-	    var processingEventQueue = eventQueue;
-	    eventQueue = null;
-	    if (simulated) {
-	      forEachAccumulated(processingEventQueue, executeDispatchesAndReleaseSimulated);
-	    } else {
-	      forEachAccumulated(processingEventQueue, executeDispatchesAndReleaseTopLevel);
-	    }
-	    !!eventQueue ?  true ? invariant(false, 'processEventQueue(): Additional events were enqueued while processing ' + 'an event queue. Support for this has not yet been implemented.') : invariant(false) : undefined;
-	    // This would be a good time to rethrow if any of the event handlers threw.
-	    ReactErrorUtils.rethrowCaughtError();
-	  },
-
-	  /**
-	   * These are needed for tests only. Do not use!
-	   */
-	  __purge: function () {
-	    listenerBank = {};
-	  },
-
-	  __getListenerBank: function () {
-	    return listenerBank;
-	  }
-
-	};
-
-	module.exports = EventPluginHub;
-
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule EventPropagators
-	 */
-
-	'use strict';
-
-	var EventConstants = __webpack_require__(10);
-	var EventPluginHub = __webpack_require__(20);
-
-	var warning = __webpack_require__(3);
-
-	var accumulateInto = __webpack_require__(83);
-	var forEachAccumulated = __webpack_require__(84);
-
-	var PropagationPhases = EventConstants.PropagationPhases;
-	var getListener = EventPluginHub.getListener;
-
-	/**
-	 * Some event types have a notion of different registration names for different
-	 * "phases" of propagation. This finds listeners by a given phase.
-	 */
-	function listenerAtPhase(id, event, propagationPhase) {
-	  var registrationName = event.dispatchConfig.phasedRegistrationNames[propagationPhase];
-	  return getListener(id, registrationName);
-	}
-
-	/**
-	 * Tags a `SyntheticEvent` with dispatched listeners. Creating this function
-	 * here, allows us to not have to bind or create functions for each event.
-	 * Mutating the event's members allows us to not have to create a wrapping
-	 * "dispatch" object that pairs the event with the listener.
-	 */
-	function accumulateDirectionalDispatches(domID, upwards, event) {
-	  if (true) {
-	     true ? warning(domID, 'Dispatching id must not be null') : undefined;
-	  }
-	  var phase = upwards ? PropagationPhases.bubbled : PropagationPhases.captured;
-	  var listener = listenerAtPhase(domID, event, phase);
-	  if (listener) {
-	    event._dispatchListeners = accumulateInto(event._dispatchListeners, listener);
-	    event._dispatchIDs = accumulateInto(event._dispatchIDs, domID);
-	  }
-	}
-
-	/**
-	 * Collect dispatches (must be entirely collected before dispatching - see unit
-	 * tests). Lazily allocate the array to conserve memory.  We must loop through
-	 * each event and perform the traversal for each one. We cannot perform a
-	 * single traversal for the entire collection of events because each event may
-	 * have a different target.
-	 */
-	function accumulateTwoPhaseDispatchesSingle(event) {
-	  if (event && event.dispatchConfig.phasedRegistrationNames) {
-	    EventPluginHub.injection.getInstanceHandle().traverseTwoPhase(event.dispatchMarker, accumulateDirectionalDispatches, event);
-	  }
-	}
-
-	/**
-	 * Same as `accumulateTwoPhaseDispatchesSingle`, but skips over the targetID.
-	 */
-	function accumulateTwoPhaseDispatchesSingleSkipTarget(event) {
-	  if (event && event.dispatchConfig.phasedRegistrationNames) {
-	    EventPluginHub.injection.getInstanceHandle().traverseTwoPhaseSkipTarget(event.dispatchMarker, accumulateDirectionalDispatches, event);
-	  }
-	}
-
-	/**
-	 * Accumulates without regard to direction, does not look for phased
-	 * registration names. Same as `accumulateDirectDispatchesSingle` but without
-	 * requiring that the `dispatchMarker` be the same as the dispatched ID.
-	 */
-	function accumulateDispatches(id, ignoredDirection, event) {
-	  if (event && event.dispatchConfig.registrationName) {
-	    var registrationName = event.dispatchConfig.registrationName;
-	    var listener = getListener(id, registrationName);
-	    if (listener) {
-	      event._dispatchListeners = accumulateInto(event._dispatchListeners, listener);
-	      event._dispatchIDs = accumulateInto(event._dispatchIDs, id);
-	    }
-	  }
-	}
-
-	/**
-	 * Accumulates dispatches on an `SyntheticEvent`, but only for the
-	 * `dispatchMarker`.
-	 * @param {SyntheticEvent} event
-	 */
-	function accumulateDirectDispatchesSingle(event) {
-	  if (event && event.dispatchConfig.registrationName) {
-	    accumulateDispatches(event.dispatchMarker, null, event);
-	  }
-	}
-
-	function accumulateTwoPhaseDispatches(events) {
-	  forEachAccumulated(events, accumulateTwoPhaseDispatchesSingle);
-	}
-
-	function accumulateTwoPhaseDispatchesSkipTarget(events) {
-	  forEachAccumulated(events, accumulateTwoPhaseDispatchesSingleSkipTarget);
-	}
-
-	function accumulateEnterLeaveDispatches(leave, enter, fromID, toID) {
-	  EventPluginHub.injection.getInstanceHandle().traverseEnterLeave(fromID, toID, accumulateDispatches, leave, enter);
-	}
-
-	function accumulateDirectDispatches(events) {
-	  forEachAccumulated(events, accumulateDirectDispatchesSingle);
-	}
-
-	/**
-	 * A small set of propagation patterns, each of which will accept a small amount
-	 * of information, and generate a set of "dispatch ready event objects" - which
-	 * are sets of events that have already been annotated with a set of dispatched
-	 * listener functions/ids. The API is designed this way to discourage these
-	 * propagation strategies from actually executing the dispatches, since we
-	 * always want to collect the entire set of dispatches before executing event a
-	 * single one.
-	 *
-	 * @constructor EventPropagators
-	 */
-	var EventPropagators = {
-	  accumulateTwoPhaseDispatches: accumulateTwoPhaseDispatches,
-	  accumulateTwoPhaseDispatchesSkipTarget: accumulateTwoPhaseDispatchesSkipTarget,
-	  accumulateDirectDispatches: accumulateDirectDispatches,
-	  accumulateEnterLeaveDispatches: accumulateEnterLeaveDispatches
-	};
-
-	module.exports = EventPropagators;
-
-/***/ },
-/* 22 */
-/***/ function(module, exports) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactInstanceMap
-	 */
-
-	'use strict';
-
-	/**
-	 * `ReactInstanceMap` maintains a mapping from a public facing stateful
-	 * instance (key) and the internal representation (value). This allows public
-	 * methods to accept the user facing instance as an argument and map them back
-	 * to internal methods.
-	 */
-
-	// TODO: Replace this with ES6: var ReactInstanceMap = new Map();
-	var ReactInstanceMap = {
-
-	  /**
-	   * This API should be called `delete` but we'd have to make sure to always
-	   * transform these to strings for IE support. When this transform is fully
-	   * supported we can rename it.
-	   */
-	  remove: function (key) {
-	    key._reactInternalInstance = undefined;
-	  },
-
-	  get: function (key) {
-	    return key._reactInternalInstance;
-	  },
-
-	  has: function (key) {
-	    return key._reactInternalInstance !== undefined;
-	  },
-
-	  set: function (key, value) {
-	    key._reactInternalInstance = value;
-	  }
-
-	};
-
-	module.exports = ReactInstanceMap;
-
-/***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule SyntheticUIEvent
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	var SyntheticEvent = __webpack_require__(16);
-
-	var getEventTarget = __webpack_require__(45);
-
-	/**
-	 * @interface UIEvent
-	 * @see http://www.w3.org/TR/DOM-Level-3-Events/
-	 */
-	var UIEventInterface = {
-	  view: function (event) {
-	    if (event.view) {
-	      return event.view;
-	    }
-
-	    var target = getEventTarget(event);
-	    if (target != null && target.window === target) {
-	      // target is a window object
-	      return target;
-	    }
-
-	    var doc = target.ownerDocument;
-	    // TODO: Figure out why `ownerDocument` is sometimes undefined in IE8.
-	    if (doc) {
-	      return doc.defaultView || doc.parentWindow;
-	    } else {
-	      return window;
-	    }
-	  },
-	  detail: function (event) {
-	    return event.detail || 0;
-	  }
-	};
-
-	/**
-	 * @param {object} dispatchConfig Configuration used to dispatch this event.
-	 * @param {string} dispatchMarker Marker identifying the event target.
-	 * @param {object} nativeEvent Native browser event.
-	 * @extends {SyntheticEvent}
-	 */
-	function SyntheticUIEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
-	  SyntheticEvent.call(this, dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget);
-	}
-
-	SyntheticEvent.augmentClass(SyntheticUIEvent, UIEventInterface);
-
-	module.exports = SyntheticUIEvent;
-
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule keyMirror
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	var invariant = __webpack_require__(1);
-
-	/**
-	 * Constructs an enumeration with keys equal to their value.
-	 *
-	 * For example:
-	 *
-	 *   var COLORS = keyMirror({blue: null, red: null});
-	 *   var myColor = COLORS.blue;
-	 *   var isColorValid = !!COLORS[myColor];
-	 *
-	 * The last line could not be performed if the values of the generated enum were
-	 * not equal to their keys.
-	 *
-	 *   Input:  {key1: val1, key2: val2}
-	 *   Output: {key1: key1, key2: key2}
-	 *
-	 * @param {object} obj
-	 * @return {object}
-	 */
-	var keyMirror = function (obj) {
-	  var ret = {};
-	  var key;
-	  !(obj instanceof Object && !Array.isArray(obj)) ?  true ? invariant(false, 'keyMirror(...): Argument must be an object.') : invariant(false) : undefined;
-	  for (key in obj) {
-	    if (!obj.hasOwnProperty(key)) {
-	      continue;
-	    }
-	    ret[key] = key;
-	  }
-	  return ret;
-	};
-
-	module.exports = keyMirror;
-
-/***/ },
-/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -8642,6 +7712,941 @@
 	}));
 
 /***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactInstanceHandles
+	 * @typechecks static-only
+	 */
+
+	'use strict';
+
+	var ReactRootIndex = __webpack_require__(81);
+
+	var invariant = __webpack_require__(1);
+
+	var SEPARATOR = '.';
+	var SEPARATOR_LENGTH = SEPARATOR.length;
+
+	/**
+	 * Maximum depth of traversals before we consider the possibility of a bad ID.
+	 */
+	var MAX_TREE_DEPTH = 10000;
+
+	/**
+	 * Creates a DOM ID prefix to use when mounting React components.
+	 *
+	 * @param {number} index A unique integer
+	 * @return {string} React root ID.
+	 * @internal
+	 */
+	function getReactRootIDString(index) {
+	  return SEPARATOR + index.toString(36);
+	}
+
+	/**
+	 * Checks if a character in the supplied ID is a separator or the end.
+	 *
+	 * @param {string} id A React DOM ID.
+	 * @param {number} index Index of the character to check.
+	 * @return {boolean} True if the character is a separator or end of the ID.
+	 * @private
+	 */
+	function isBoundary(id, index) {
+	  return id.charAt(index) === SEPARATOR || index === id.length;
+	}
+
+	/**
+	 * Checks if the supplied string is a valid React DOM ID.
+	 *
+	 * @param {string} id A React DOM ID, maybe.
+	 * @return {boolean} True if the string is a valid React DOM ID.
+	 * @private
+	 */
+	function isValidID(id) {
+	  return id === '' || id.charAt(0) === SEPARATOR && id.charAt(id.length - 1) !== SEPARATOR;
+	}
+
+	/**
+	 * Checks if the first ID is an ancestor of or equal to the second ID.
+	 *
+	 * @param {string} ancestorID
+	 * @param {string} descendantID
+	 * @return {boolean} True if `ancestorID` is an ancestor of `descendantID`.
+	 * @internal
+	 */
+	function isAncestorIDOf(ancestorID, descendantID) {
+	  return descendantID.indexOf(ancestorID) === 0 && isBoundary(descendantID, ancestorID.length);
+	}
+
+	/**
+	 * Gets the parent ID of the supplied React DOM ID, `id`.
+	 *
+	 * @param {string} id ID of a component.
+	 * @return {string} ID of the parent, or an empty string.
+	 * @private
+	 */
+	function getParentID(id) {
+	  return id ? id.substr(0, id.lastIndexOf(SEPARATOR)) : '';
+	}
+
+	/**
+	 * Gets the next DOM ID on the tree path from the supplied `ancestorID` to the
+	 * supplied `destinationID`. If they are equal, the ID is returned.
+	 *
+	 * @param {string} ancestorID ID of an ancestor node of `destinationID`.
+	 * @param {string} destinationID ID of the destination node.
+	 * @return {string} Next ID on the path from `ancestorID` to `destinationID`.
+	 * @private
+	 */
+	function getNextDescendantID(ancestorID, destinationID) {
+	  !(isValidID(ancestorID) && isValidID(destinationID)) ?  true ? invariant(false, 'getNextDescendantID(%s, %s): Received an invalid React DOM ID.', ancestorID, destinationID) : invariant(false) : undefined;
+	  !isAncestorIDOf(ancestorID, destinationID) ?  true ? invariant(false, 'getNextDescendantID(...): React has made an invalid assumption about ' + 'the DOM hierarchy. Expected `%s` to be an ancestor of `%s`.', ancestorID, destinationID) : invariant(false) : undefined;
+	  if (ancestorID === destinationID) {
+	    return ancestorID;
+	  }
+	  // Skip over the ancestor and the immediate separator. Traverse until we hit
+	  // another separator or we reach the end of `destinationID`.
+	  var start = ancestorID.length + SEPARATOR_LENGTH;
+	  var i;
+	  for (i = start; i < destinationID.length; i++) {
+	    if (isBoundary(destinationID, i)) {
+	      break;
+	    }
+	  }
+	  return destinationID.substr(0, i);
+	}
+
+	/**
+	 * Gets the nearest common ancestor ID of two IDs.
+	 *
+	 * Using this ID scheme, the nearest common ancestor ID is the longest common
+	 * prefix of the two IDs that immediately preceded a "marker" in both strings.
+	 *
+	 * @param {string} oneID
+	 * @param {string} twoID
+	 * @return {string} Nearest common ancestor ID, or the empty string if none.
+	 * @private
+	 */
+	function getFirstCommonAncestorID(oneID, twoID) {
+	  var minLength = Math.min(oneID.length, twoID.length);
+	  if (minLength === 0) {
+	    return '';
+	  }
+	  var lastCommonMarkerIndex = 0;
+	  // Use `<=` to traverse until the "EOL" of the shorter string.
+	  for (var i = 0; i <= minLength; i++) {
+	    if (isBoundary(oneID, i) && isBoundary(twoID, i)) {
+	      lastCommonMarkerIndex = i;
+	    } else if (oneID.charAt(i) !== twoID.charAt(i)) {
+	      break;
+	    }
+	  }
+	  var longestCommonID = oneID.substr(0, lastCommonMarkerIndex);
+	  !isValidID(longestCommonID) ?  true ? invariant(false, 'getFirstCommonAncestorID(%s, %s): Expected a valid React DOM ID: %s', oneID, twoID, longestCommonID) : invariant(false) : undefined;
+	  return longestCommonID;
+	}
+
+	/**
+	 * Traverses the parent path between two IDs (either up or down). The IDs must
+	 * not be the same, and there must exist a parent path between them. If the
+	 * callback returns `false`, traversal is stopped.
+	 *
+	 * @param {?string} start ID at which to start traversal.
+	 * @param {?string} stop ID at which to end traversal.
+	 * @param {function} cb Callback to invoke each ID with.
+	 * @param {*} arg Argument to invoke the callback with.
+	 * @param {?boolean} skipFirst Whether or not to skip the first node.
+	 * @param {?boolean} skipLast Whether or not to skip the last node.
+	 * @private
+	 */
+	function traverseParentPath(start, stop, cb, arg, skipFirst, skipLast) {
+	  start = start || '';
+	  stop = stop || '';
+	  !(start !== stop) ?  true ? invariant(false, 'traverseParentPath(...): Cannot traverse from and to the same ID, `%s`.', start) : invariant(false) : undefined;
+	  var traverseUp = isAncestorIDOf(stop, start);
+	  !(traverseUp || isAncestorIDOf(start, stop)) ?  true ? invariant(false, 'traverseParentPath(%s, %s, ...): Cannot traverse from two IDs that do ' + 'not have a parent path.', start, stop) : invariant(false) : undefined;
+	  // Traverse from `start` to `stop` one depth at a time.
+	  var depth = 0;
+	  var traverse = traverseUp ? getParentID : getNextDescendantID;
+	  for (var id = start;; /* until break */id = traverse(id, stop)) {
+	    var ret;
+	    if ((!skipFirst || id !== start) && (!skipLast || id !== stop)) {
+	      ret = cb(id, traverseUp, arg);
+	    }
+	    if (ret === false || id === stop) {
+	      // Only break //after// visiting `stop`.
+	      break;
+	    }
+	    !(depth++ < MAX_TREE_DEPTH) ?  true ? invariant(false, 'traverseParentPath(%s, %s, ...): Detected an infinite loop while ' + 'traversing the React DOM ID tree. This may be due to malformed IDs: %s', start, stop, id) : invariant(false) : undefined;
+	  }
+	}
+
+	/**
+	 * Manages the IDs assigned to DOM representations of React components. This
+	 * uses a specific scheme in order to traverse the DOM efficiently (e.g. in
+	 * order to simulate events).
+	 *
+	 * @internal
+	 */
+	var ReactInstanceHandles = {
+
+	  /**
+	   * Constructs a React root ID
+	   * @return {string} A React root ID.
+	   */
+	  createReactRootID: function () {
+	    return getReactRootIDString(ReactRootIndex.createReactRootIndex());
+	  },
+
+	  /**
+	   * Constructs a React ID by joining a root ID with a name.
+	   *
+	   * @param {string} rootID Root ID of a parent component.
+	   * @param {string} name A component's name (as flattened children).
+	   * @return {string} A React ID.
+	   * @internal
+	   */
+	  createReactID: function (rootID, name) {
+	    return rootID + name;
+	  },
+
+	  /**
+	   * Gets the DOM ID of the React component that is the root of the tree that
+	   * contains the React component with the supplied DOM ID.
+	   *
+	   * @param {string} id DOM ID of a React component.
+	   * @return {?string} DOM ID of the React component that is the root.
+	   * @internal
+	   */
+	  getReactRootIDFromNodeID: function (id) {
+	    if (id && id.charAt(0) === SEPARATOR && id.length > 1) {
+	      var index = id.indexOf(SEPARATOR, 1);
+	      return index > -1 ? id.substr(0, index) : id;
+	    }
+	    return null;
+	  },
+
+	  /**
+	   * Traverses the ID hierarchy and invokes the supplied `cb` on any IDs that
+	   * should would receive a `mouseEnter` or `mouseLeave` event.
+	   *
+	   * NOTE: Does not invoke the callback on the nearest common ancestor because
+	   * nothing "entered" or "left" that element.
+	   *
+	   * @param {string} leaveID ID being left.
+	   * @param {string} enterID ID being entered.
+	   * @param {function} cb Callback to invoke on each entered/left ID.
+	   * @param {*} upArg Argument to invoke the callback with on left IDs.
+	   * @param {*} downArg Argument to invoke the callback with on entered IDs.
+	   * @internal
+	   */
+	  traverseEnterLeave: function (leaveID, enterID, cb, upArg, downArg) {
+	    var ancestorID = getFirstCommonAncestorID(leaveID, enterID);
+	    if (ancestorID !== leaveID) {
+	      traverseParentPath(leaveID, ancestorID, cb, upArg, false, true);
+	    }
+	    if (ancestorID !== enterID) {
+	      traverseParentPath(ancestorID, enterID, cb, downArg, true, false);
+	    }
+	  },
+
+	  /**
+	   * Simulates the traversal of a two-phase, capture/bubble event dispatch.
+	   *
+	   * NOTE: This traversal happens on IDs without touching the DOM.
+	   *
+	   * @param {string} targetID ID of the target node.
+	   * @param {function} cb Callback to invoke.
+	   * @param {*} arg Argument to invoke the callback with.
+	   * @internal
+	   */
+	  traverseTwoPhase: function (targetID, cb, arg) {
+	    if (targetID) {
+	      traverseParentPath('', targetID, cb, arg, true, false);
+	      traverseParentPath(targetID, '', cb, arg, false, true);
+	    }
+	  },
+
+	  /**
+	   * Same as `traverseTwoPhase` but skips the `targetID`.
+	   */
+	  traverseTwoPhaseSkipTarget: function (targetID, cb, arg) {
+	    if (targetID) {
+	      traverseParentPath('', targetID, cb, arg, true, true);
+	      traverseParentPath(targetID, '', cb, arg, true, true);
+	    }
+	  },
+
+	  /**
+	   * Traverse a node ID, calling the supplied `cb` for each ancestor ID. For
+	   * example, passing `.0.$row-0.1` would result in `cb` getting called
+	   * with `.0`, `.0.$row-0`, and `.0.$row-0.1`.
+	   *
+	   * NOTE: This traversal happens on IDs without touching the DOM.
+	   *
+	   * @param {string} targetID ID of the target node.
+	   * @param {function} cb Callback to invoke.
+	   * @param {*} arg Argument to invoke the callback with.
+	   * @internal
+	   */
+	  traverseAncestors: function (targetID, cb, arg) {
+	    traverseParentPath('', targetID, cb, arg, true, false);
+	  },
+
+	  getFirstCommonAncestorID: getFirstCommonAncestorID,
+
+	  /**
+	   * Exposed for unit testing.
+	   * @private
+	   */
+	  _getNextDescendantID: getNextDescendantID,
+
+	  isAncestorIDOf: isAncestorIDOf,
+
+	  SEPARATOR: SEPARATOR
+
+	};
+
+	module.exports = ReactInstanceHandles;
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = __webpack_require__(125);
+
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule emptyObject
+	 */
+
+	'use strict';
+
+	var emptyObject = {};
+
+	if (true) {
+	  Object.freeze(emptyObject);
+	}
+
+	module.exports = emptyObject;
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule EventPluginHub
+	 */
+
+	'use strict';
+
+	var EventPluginRegistry = __webpack_require__(61);
+	var EventPluginUtils = __webpack_require__(122);
+	var ReactErrorUtils = __webpack_require__(74);
+
+	var accumulateInto = __webpack_require__(83);
+	var forEachAccumulated = __webpack_require__(84);
+	var invariant = __webpack_require__(1);
+	var warning = __webpack_require__(3);
+
+	/**
+	 * Internal store for event listeners
+	 */
+	var listenerBank = {};
+
+	/**
+	 * Internal queue of events that have accumulated their dispatches and are
+	 * waiting to have their dispatches executed.
+	 */
+	var eventQueue = null;
+
+	/**
+	 * Dispatches an event and releases it back into the pool, unless persistent.
+	 *
+	 * @param {?object} event Synthetic event to be dispatched.
+	 * @param {boolean} simulated If the event is simulated (changes exn behavior)
+	 * @private
+	 */
+	var executeDispatchesAndRelease = function (event, simulated) {
+	  if (event) {
+	    EventPluginUtils.executeDispatchesInOrder(event, simulated);
+
+	    if (!event.isPersistent()) {
+	      event.constructor.release(event);
+	    }
+	  }
+	};
+	var executeDispatchesAndReleaseSimulated = function (e) {
+	  return executeDispatchesAndRelease(e, true);
+	};
+	var executeDispatchesAndReleaseTopLevel = function (e) {
+	  return executeDispatchesAndRelease(e, false);
+	};
+
+	/**
+	 * - `InstanceHandle`: [required] Module that performs logical traversals of DOM
+	 *   hierarchy given ids of the logical DOM elements involved.
+	 */
+	var InstanceHandle = null;
+
+	function validateInstanceHandle() {
+	  var valid = InstanceHandle && InstanceHandle.traverseTwoPhase && InstanceHandle.traverseEnterLeave;
+	   true ? warning(valid, 'InstanceHandle not injected before use!') : undefined;
+	}
+
+	/**
+	 * This is a unified interface for event plugins to be installed and configured.
+	 *
+	 * Event plugins can implement the following properties:
+	 *
+	 *   `extractEvents` {function(string, DOMEventTarget, string, object): *}
+	 *     Required. When a top-level event is fired, this method is expected to
+	 *     extract synthetic events that will in turn be queued and dispatched.
+	 *
+	 *   `eventTypes` {object}
+	 *     Optional, plugins that fire events must publish a mapping of registration
+	 *     names that are used to register listeners. Values of this mapping must
+	 *     be objects that contain `registrationName` or `phasedRegistrationNames`.
+	 *
+	 *   `executeDispatch` {function(object, function, string)}
+	 *     Optional, allows plugins to override how an event gets dispatched. By
+	 *     default, the listener is simply invoked.
+	 *
+	 * Each plugin that is injected into `EventsPluginHub` is immediately operable.
+	 *
+	 * @public
+	 */
+	var EventPluginHub = {
+
+	  /**
+	   * Methods for injecting dependencies.
+	   */
+	  injection: {
+
+	    /**
+	     * @param {object} InjectedMount
+	     * @public
+	     */
+	    injectMount: EventPluginUtils.injection.injectMount,
+
+	    /**
+	     * @param {object} InjectedInstanceHandle
+	     * @public
+	     */
+	    injectInstanceHandle: function (InjectedInstanceHandle) {
+	      InstanceHandle = InjectedInstanceHandle;
+	      if (true) {
+	        validateInstanceHandle();
+	      }
+	    },
+
+	    getInstanceHandle: function () {
+	      if (true) {
+	        validateInstanceHandle();
+	      }
+	      return InstanceHandle;
+	    },
+
+	    /**
+	     * @param {array} InjectedEventPluginOrder
+	     * @public
+	     */
+	    injectEventPluginOrder: EventPluginRegistry.injectEventPluginOrder,
+
+	    /**
+	     * @param {object} injectedNamesToPlugins Map from names to plugin modules.
+	     */
+	    injectEventPluginsByName: EventPluginRegistry.injectEventPluginsByName
+
+	  },
+
+	  eventNameDispatchConfigs: EventPluginRegistry.eventNameDispatchConfigs,
+
+	  registrationNameModules: EventPluginRegistry.registrationNameModules,
+
+	  /**
+	   * Stores `listener` at `listenerBank[registrationName][id]`. Is idempotent.
+	   *
+	   * @param {string} id ID of the DOM element.
+	   * @param {string} registrationName Name of listener (e.g. `onClick`).
+	   * @param {?function} listener The callback to store.
+	   */
+	  putListener: function (id, registrationName, listener) {
+	    !(typeof listener === 'function') ?  true ? invariant(false, 'Expected %s listener to be a function, instead got type %s', registrationName, typeof listener) : invariant(false) : undefined;
+
+	    var bankForRegistrationName = listenerBank[registrationName] || (listenerBank[registrationName] = {});
+	    bankForRegistrationName[id] = listener;
+
+	    var PluginModule = EventPluginRegistry.registrationNameModules[registrationName];
+	    if (PluginModule && PluginModule.didPutListener) {
+	      PluginModule.didPutListener(id, registrationName, listener);
+	    }
+	  },
+
+	  /**
+	   * @param {string} id ID of the DOM element.
+	   * @param {string} registrationName Name of listener (e.g. `onClick`).
+	   * @return {?function} The stored callback.
+	   */
+	  getListener: function (id, registrationName) {
+	    var bankForRegistrationName = listenerBank[registrationName];
+	    return bankForRegistrationName && bankForRegistrationName[id];
+	  },
+
+	  /**
+	   * Deletes a listener from the registration bank.
+	   *
+	   * @param {string} id ID of the DOM element.
+	   * @param {string} registrationName Name of listener (e.g. `onClick`).
+	   */
+	  deleteListener: function (id, registrationName) {
+	    var PluginModule = EventPluginRegistry.registrationNameModules[registrationName];
+	    if (PluginModule && PluginModule.willDeleteListener) {
+	      PluginModule.willDeleteListener(id, registrationName);
+	    }
+
+	    var bankForRegistrationName = listenerBank[registrationName];
+	    // TODO: This should never be null -- when is it?
+	    if (bankForRegistrationName) {
+	      delete bankForRegistrationName[id];
+	    }
+	  },
+
+	  /**
+	   * Deletes all listeners for the DOM element with the supplied ID.
+	   *
+	   * @param {string} id ID of the DOM element.
+	   */
+	  deleteAllListeners: function (id) {
+	    for (var registrationName in listenerBank) {
+	      if (!listenerBank[registrationName][id]) {
+	        continue;
+	      }
+
+	      var PluginModule = EventPluginRegistry.registrationNameModules[registrationName];
+	      if (PluginModule && PluginModule.willDeleteListener) {
+	        PluginModule.willDeleteListener(id, registrationName);
+	      }
+
+	      delete listenerBank[registrationName][id];
+	    }
+	  },
+
+	  /**
+	   * Allows registered plugins an opportunity to extract events from top-level
+	   * native browser events.
+	   *
+	   * @param {string} topLevelType Record from `EventConstants`.
+	   * @param {DOMEventTarget} topLevelTarget The listening component root node.
+	   * @param {string} topLevelTargetID ID of `topLevelTarget`.
+	   * @param {object} nativeEvent Native browser event.
+	   * @return {*} An accumulation of synthetic events.
+	   * @internal
+	   */
+	  extractEvents: function (topLevelType, topLevelTarget, topLevelTargetID, nativeEvent, nativeEventTarget) {
+	    var events;
+	    var plugins = EventPluginRegistry.plugins;
+	    for (var i = 0; i < plugins.length; i++) {
+	      // Not every plugin in the ordering may be loaded at runtime.
+	      var possiblePlugin = plugins[i];
+	      if (possiblePlugin) {
+	        var extractedEvents = possiblePlugin.extractEvents(topLevelType, topLevelTarget, topLevelTargetID, nativeEvent, nativeEventTarget);
+	        if (extractedEvents) {
+	          events = accumulateInto(events, extractedEvents);
+	        }
+	      }
+	    }
+	    return events;
+	  },
+
+	  /**
+	   * Enqueues a synthetic event that should be dispatched when
+	   * `processEventQueue` is invoked.
+	   *
+	   * @param {*} events An accumulation of synthetic events.
+	   * @internal
+	   */
+	  enqueueEvents: function (events) {
+	    if (events) {
+	      eventQueue = accumulateInto(eventQueue, events);
+	    }
+	  },
+
+	  /**
+	   * Dispatches all synthetic events on the event queue.
+	   *
+	   * @internal
+	   */
+	  processEventQueue: function (simulated) {
+	    // Set `eventQueue` to null before processing it so that we can tell if more
+	    // events get enqueued while processing.
+	    var processingEventQueue = eventQueue;
+	    eventQueue = null;
+	    if (simulated) {
+	      forEachAccumulated(processingEventQueue, executeDispatchesAndReleaseSimulated);
+	    } else {
+	      forEachAccumulated(processingEventQueue, executeDispatchesAndReleaseTopLevel);
+	    }
+	    !!eventQueue ?  true ? invariant(false, 'processEventQueue(): Additional events were enqueued while processing ' + 'an event queue. Support for this has not yet been implemented.') : invariant(false) : undefined;
+	    // This would be a good time to rethrow if any of the event handlers threw.
+	    ReactErrorUtils.rethrowCaughtError();
+	  },
+
+	  /**
+	   * These are needed for tests only. Do not use!
+	   */
+	  __purge: function () {
+	    listenerBank = {};
+	  },
+
+	  __getListenerBank: function () {
+	    return listenerBank;
+	  }
+
+	};
+
+	module.exports = EventPluginHub;
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule EventPropagators
+	 */
+
+	'use strict';
+
+	var EventConstants = __webpack_require__(10);
+	var EventPluginHub = __webpack_require__(21);
+
+	var warning = __webpack_require__(3);
+
+	var accumulateInto = __webpack_require__(83);
+	var forEachAccumulated = __webpack_require__(84);
+
+	var PropagationPhases = EventConstants.PropagationPhases;
+	var getListener = EventPluginHub.getListener;
+
+	/**
+	 * Some event types have a notion of different registration names for different
+	 * "phases" of propagation. This finds listeners by a given phase.
+	 */
+	function listenerAtPhase(id, event, propagationPhase) {
+	  var registrationName = event.dispatchConfig.phasedRegistrationNames[propagationPhase];
+	  return getListener(id, registrationName);
+	}
+
+	/**
+	 * Tags a `SyntheticEvent` with dispatched listeners. Creating this function
+	 * here, allows us to not have to bind or create functions for each event.
+	 * Mutating the event's members allows us to not have to create a wrapping
+	 * "dispatch" object that pairs the event with the listener.
+	 */
+	function accumulateDirectionalDispatches(domID, upwards, event) {
+	  if (true) {
+	     true ? warning(domID, 'Dispatching id must not be null') : undefined;
+	  }
+	  var phase = upwards ? PropagationPhases.bubbled : PropagationPhases.captured;
+	  var listener = listenerAtPhase(domID, event, phase);
+	  if (listener) {
+	    event._dispatchListeners = accumulateInto(event._dispatchListeners, listener);
+	    event._dispatchIDs = accumulateInto(event._dispatchIDs, domID);
+	  }
+	}
+
+	/**
+	 * Collect dispatches (must be entirely collected before dispatching - see unit
+	 * tests). Lazily allocate the array to conserve memory.  We must loop through
+	 * each event and perform the traversal for each one. We cannot perform a
+	 * single traversal for the entire collection of events because each event may
+	 * have a different target.
+	 */
+	function accumulateTwoPhaseDispatchesSingle(event) {
+	  if (event && event.dispatchConfig.phasedRegistrationNames) {
+	    EventPluginHub.injection.getInstanceHandle().traverseTwoPhase(event.dispatchMarker, accumulateDirectionalDispatches, event);
+	  }
+	}
+
+	/**
+	 * Same as `accumulateTwoPhaseDispatchesSingle`, but skips over the targetID.
+	 */
+	function accumulateTwoPhaseDispatchesSingleSkipTarget(event) {
+	  if (event && event.dispatchConfig.phasedRegistrationNames) {
+	    EventPluginHub.injection.getInstanceHandle().traverseTwoPhaseSkipTarget(event.dispatchMarker, accumulateDirectionalDispatches, event);
+	  }
+	}
+
+	/**
+	 * Accumulates without regard to direction, does not look for phased
+	 * registration names. Same as `accumulateDirectDispatchesSingle` but without
+	 * requiring that the `dispatchMarker` be the same as the dispatched ID.
+	 */
+	function accumulateDispatches(id, ignoredDirection, event) {
+	  if (event && event.dispatchConfig.registrationName) {
+	    var registrationName = event.dispatchConfig.registrationName;
+	    var listener = getListener(id, registrationName);
+	    if (listener) {
+	      event._dispatchListeners = accumulateInto(event._dispatchListeners, listener);
+	      event._dispatchIDs = accumulateInto(event._dispatchIDs, id);
+	    }
+	  }
+	}
+
+	/**
+	 * Accumulates dispatches on an `SyntheticEvent`, but only for the
+	 * `dispatchMarker`.
+	 * @param {SyntheticEvent} event
+	 */
+	function accumulateDirectDispatchesSingle(event) {
+	  if (event && event.dispatchConfig.registrationName) {
+	    accumulateDispatches(event.dispatchMarker, null, event);
+	  }
+	}
+
+	function accumulateTwoPhaseDispatches(events) {
+	  forEachAccumulated(events, accumulateTwoPhaseDispatchesSingle);
+	}
+
+	function accumulateTwoPhaseDispatchesSkipTarget(events) {
+	  forEachAccumulated(events, accumulateTwoPhaseDispatchesSingleSkipTarget);
+	}
+
+	function accumulateEnterLeaveDispatches(leave, enter, fromID, toID) {
+	  EventPluginHub.injection.getInstanceHandle().traverseEnterLeave(fromID, toID, accumulateDispatches, leave, enter);
+	}
+
+	function accumulateDirectDispatches(events) {
+	  forEachAccumulated(events, accumulateDirectDispatchesSingle);
+	}
+
+	/**
+	 * A small set of propagation patterns, each of which will accept a small amount
+	 * of information, and generate a set of "dispatch ready event objects" - which
+	 * are sets of events that have already been annotated with a set of dispatched
+	 * listener functions/ids. The API is designed this way to discourage these
+	 * propagation strategies from actually executing the dispatches, since we
+	 * always want to collect the entire set of dispatches before executing event a
+	 * single one.
+	 *
+	 * @constructor EventPropagators
+	 */
+	var EventPropagators = {
+	  accumulateTwoPhaseDispatches: accumulateTwoPhaseDispatches,
+	  accumulateTwoPhaseDispatchesSkipTarget: accumulateTwoPhaseDispatchesSkipTarget,
+	  accumulateDirectDispatches: accumulateDirectDispatches,
+	  accumulateEnterLeaveDispatches: accumulateEnterLeaveDispatches
+	};
+
+	module.exports = EventPropagators;
+
+/***/ },
+/* 23 */
+/***/ function(module, exports) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactInstanceMap
+	 */
+
+	'use strict';
+
+	/**
+	 * `ReactInstanceMap` maintains a mapping from a public facing stateful
+	 * instance (key) and the internal representation (value). This allows public
+	 * methods to accept the user facing instance as an argument and map them back
+	 * to internal methods.
+	 */
+
+	// TODO: Replace this with ES6: var ReactInstanceMap = new Map();
+	var ReactInstanceMap = {
+
+	  /**
+	   * This API should be called `delete` but we'd have to make sure to always
+	   * transform these to strings for IE support. When this transform is fully
+	   * supported we can rename it.
+	   */
+	  remove: function (key) {
+	    key._reactInternalInstance = undefined;
+	  },
+
+	  get: function (key) {
+	    return key._reactInternalInstance;
+	  },
+
+	  has: function (key) {
+	    return key._reactInternalInstance !== undefined;
+	  },
+
+	  set: function (key, value) {
+	    key._reactInternalInstance = value;
+	  }
+
+	};
+
+	module.exports = ReactInstanceMap;
+
+/***/ },
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule SyntheticUIEvent
+	 * @typechecks static-only
+	 */
+
+	'use strict';
+
+	var SyntheticEvent = __webpack_require__(16);
+
+	var getEventTarget = __webpack_require__(45);
+
+	/**
+	 * @interface UIEvent
+	 * @see http://www.w3.org/TR/DOM-Level-3-Events/
+	 */
+	var UIEventInterface = {
+	  view: function (event) {
+	    if (event.view) {
+	      return event.view;
+	    }
+
+	    var target = getEventTarget(event);
+	    if (target != null && target.window === target) {
+	      // target is a window object
+	      return target;
+	    }
+
+	    var doc = target.ownerDocument;
+	    // TODO: Figure out why `ownerDocument` is sometimes undefined in IE8.
+	    if (doc) {
+	      return doc.defaultView || doc.parentWindow;
+	    } else {
+	      return window;
+	    }
+	  },
+	  detail: function (event) {
+	    return event.detail || 0;
+	  }
+	};
+
+	/**
+	 * @param {object} dispatchConfig Configuration used to dispatch this event.
+	 * @param {string} dispatchMarker Marker identifying the event target.
+	 * @param {object} nativeEvent Native browser event.
+	 * @extends {SyntheticEvent}
+	 */
+	function SyntheticUIEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
+	  SyntheticEvent.call(this, dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget);
+	}
+
+	SyntheticEvent.augmentClass(SyntheticUIEvent, UIEventInterface);
+
+	module.exports = SyntheticUIEvent;
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule keyMirror
+	 * @typechecks static-only
+	 */
+
+	'use strict';
+
+	var invariant = __webpack_require__(1);
+
+	/**
+	 * Constructs an enumeration with keys equal to their value.
+	 *
+	 * For example:
+	 *
+	 *   var COLORS = keyMirror({blue: null, red: null});
+	 *   var myColor = COLORS.blue;
+	 *   var isColorValid = !!COLORS[myColor];
+	 *
+	 * The last line could not be performed if the values of the generated enum were
+	 * not equal to their keys.
+	 *
+	 *   Input:  {key1: val1, key2: val2}
+	 *   Output: {key1: key1, key2: key2}
+	 *
+	 * @param {object} obj
+	 * @return {object}
+	 */
+	var keyMirror = function (obj) {
+	  var ret = {};
+	  var key;
+	  !(obj instanceof Object && !Array.isArray(obj)) ?  true ? invariant(false, 'keyMirror(...): Argument must be an object.') : invariant(false) : undefined;
+	  for (key in obj) {
+	    if (!obj.hasOwnProperty(key)) {
+	      continue;
+	    }
+	    ret[key] = key;
+	  }
+	  return ret;
+	};
+
+	module.exports = keyMirror;
+
+/***/ },
 /* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -8660,7 +8665,7 @@
 	'use strict';
 
 	var EventConstants = __webpack_require__(10);
-	var EventPluginHub = __webpack_require__(20);
+	var EventPluginHub = __webpack_require__(21);
 	var EventPluginRegistry = __webpack_require__(61);
 	var ReactEventEmitterMixin = __webpack_require__(139);
 	var ReactPerf = __webpack_require__(7);
@@ -9016,7 +9021,7 @@
 
 	'use strict';
 
-	var keyMirror = __webpack_require__(24);
+	var keyMirror = __webpack_require__(25);
 
 	var ReactPropTypeLocations = keyMirror({
 	  prop: null,
@@ -9044,7 +9049,7 @@
 
 	'use strict';
 
-	var SyntheticUIEvent = __webpack_require__(23);
+	var SyntheticUIEvent = __webpack_require__(24);
 	var ViewportMetrics = __webpack_require__(82);
 
 	var getEventModifierState = __webpack_require__(44);
@@ -10194,7 +10199,7 @@
 
 	var ReactCurrentOwner = __webpack_require__(11);
 	var ReactElement = __webpack_require__(6);
-	var ReactInstanceMap = __webpack_require__(22);
+	var ReactInstanceMap = __webpack_require__(23);
 	var ReactUpdates = __webpack_require__(8);
 
 	var assign = __webpack_require__(2);
@@ -10475,7 +10480,7 @@
 	'use strict';
 
 	var ReactCurrentOwner = __webpack_require__(11);
-	var ReactInstanceMap = __webpack_require__(22);
+	var ReactInstanceMap = __webpack_require__(23);
 	var ReactMount = __webpack_require__(5);
 
 	var invariant = __webpack_require__(1);
@@ -10987,7 +10992,7 @@
 
 	var ReactCurrentOwner = __webpack_require__(11);
 	var ReactElement = __webpack_require__(6);
-	var ReactInstanceHandles = __webpack_require__(17);
+	var ReactInstanceHandles = __webpack_require__(18);
 
 	var getIteratorFn = __webpack_require__(46);
 	var invariant = __webpack_require__(1);
@@ -12619,9 +12624,9 @@
 	var ReactNoopUpdateQueue = __webpack_require__(79);
 
 	var assign = __webpack_require__(2);
-	var emptyObject = __webpack_require__(19);
+	var emptyObject = __webpack_require__(20);
 	var invariant = __webpack_require__(1);
-	var keyMirror = __webpack_require__(24);
+	var keyMirror = __webpack_require__(25);
 	var keyOf = __webpack_require__(12);
 	var warning = __webpack_require__(3);
 
@@ -13391,7 +13396,7 @@
 	var ReactNoopUpdateQueue = __webpack_require__(79);
 
 	var canDefineProperty = __webpack_require__(31);
-	var emptyObject = __webpack_require__(19);
+	var emptyObject = __webpack_require__(20);
 	var invariant = __webpack_require__(1);
 	var warning = __webpack_require__(3);
 
@@ -13520,7 +13525,7 @@
 	var ReactCurrentOwner = __webpack_require__(11);
 	var ReactDOMTextComponent = __webpack_require__(68);
 	var ReactDefaultInjection = __webpack_require__(70);
-	var ReactInstanceHandles = __webpack_require__(17);
+	var ReactInstanceHandles = __webpack_require__(18);
 	var ReactMount = __webpack_require__(5);
 	var ReactPerf = __webpack_require__(7);
 	var ReactReconciler = __webpack_require__(15);
@@ -14046,7 +14051,7 @@
 	var ReactDOMTextComponent = __webpack_require__(68);
 	var ReactEventListener = __webpack_require__(140);
 	var ReactInjection = __webpack_require__(141);
-	var ReactInstanceHandles = __webpack_require__(17);
+	var ReactInstanceHandles = __webpack_require__(18);
 	var ReactMount = __webpack_require__(5);
 	var ReactReconcileTransaction = __webpack_require__(145);
 	var SelectEventPlugin = __webpack_require__(151);
@@ -14790,7 +14795,7 @@
 
 	'use strict';
 
-	var keyMirror = __webpack_require__(24);
+	var keyMirror = __webpack_require__(25);
 
 	/**
 	 * When a component's children are updated, a series of update configuration
@@ -15700,9 +15705,9 @@
 	    };
 	}();
 
-	var _immutable = __webpack_require__(25);
+	var _immutable = __webpack_require__(17);
 
-	var _react = __webpack_require__(18);
+	var _react = __webpack_require__(19);
 
 	var _react2 = _interopRequireDefault(_react);
 
@@ -15747,11 +15752,13 @@
 	            var _props = this.props;
 	            var ItemComponent = _props.ItemComponent;
 	            var additionalHeight = _props.additionalHeight;
+	            var items = _props.items;
 	            var offsetLeft = _props.offsetLeft;
 
 	            return {
 	                ItemComponent: ItemComponent,
 	                additionalHeight: additionalHeight,
+	                items: items,
 	                offsetLeft: offsetLeft
 	            };
 	        }
@@ -15760,14 +15767,13 @@
 	        value: function render() {
 	            var _props2 = this.props;
 	            var additionalHeight = _props2.additionalHeight;
+	            var items = _props2.items;
 	            var minWidth = _props2.minWidth;
 	            var padding = _props2.padding;
 	            var offsetLeft = _props2.offsetLeft;
 	            var load = _props2.load;
 	            var loading = _props2.loading;
 	            var more = _props2.more;
-
-	            var items = _immutable.Iterable.isIterable(this.props.items) ? this.props.items : (0, _immutable.fromJS)(this.props.items);
 
 	            var displayProps = {
 	                additionalHeight: additionalHeight,
@@ -15800,6 +15806,7 @@
 	AdaptiveGrid.childContextTypes = {
 	    ItemComponent: _react.PropTypes.func,
 	    additionalHeight: _react.PropTypes.number,
+	    items: _react.PropTypes.instanceOf(_immutable.List),
 	    offsetLeft: _react.PropTypes.number
 	};
 
@@ -15807,7 +15814,7 @@
 	    ItemComponent: _react.PropTypes.func.isRequired,
 	    additionalHeight: _react.PropTypes.number,
 	    minWidth: _react.PropTypes.number.isRequired,
-	    items: _react.PropTypes.oneOfType([_react.PropTypes.array, _react.PropTypes.object]).isRequired,
+	    items: _react.PropTypes.instanceOf(_immutable.List).isRequired,
 	    padding: _react.PropTypes.number,
 	    offsetLeft: _react.PropTypes.number,
 	    load: _react.PropTypes.func
@@ -15847,7 +15854,7 @@
 	    };
 	}();
 
-	var _react = __webpack_require__(18);
+	var _react = __webpack_require__(19);
 
 	var _react2 = _interopRequireDefault(_react);
 
@@ -16077,11 +16084,11 @@
 	    };
 	}();
 
-	var _react = __webpack_require__(18);
+	var _react = __webpack_require__(19);
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _immutable = __webpack_require__(25);
+	var _immutable = __webpack_require__(17);
 
 	var _Row = __webpack_require__(94);
 
@@ -16192,7 +16199,7 @@
 	    };
 	}();
 
-	var _immutable = __webpack_require__(25);
+	var _immutable = __webpack_require__(17);
 
 	var _gridCalculations = __webpack_require__(95);
 
@@ -16314,7 +16321,9 @@
 	    };
 	}();
 
-	var _react = __webpack_require__(18);
+	var _immutable = __webpack_require__(17);
+
+	var _react = __webpack_require__(19);
 
 	var _react2 = _interopRequireDefault(_react);
 
@@ -16346,6 +16355,12 @@
 	    marginLeft: 0
 	};
 
+	var getDataPridicate = function getDataPridicate(item) {
+	    return function (i) {
+	        return item.get('id') === i.get('id');
+	    };
+	};
+
 	var Item = function (_Component) {
 	    _inherits(Item, _Component);
 
@@ -16358,17 +16373,28 @@
 	    _createClass(Item, [{
 	        key: 'render',
 	        value: function render() {
-	            var item = this.props.item;
+	            var _props$item = this.props.item;
+	            var item = _props$item === undefined ? (0, _immutable.Map)() : _props$item;
 	            var _context = this.context;
 	            var ItemComponent = _context.ItemComponent;
 	            var additionalHeight = _context.additionalHeight;
+	            var items = _context.items;
 	            var offsetLeft = _context.offsetLeft;
 
 	            var itemStyle = _extends({}, defaultItemStyle, {
 	                marginLeft: offsetLeft
 	            });
 
-	            return _react2.default.createElement('div', { style: itemStyle }, _react2.default.createElement(ItemComponent, { data: item, additionalHeight: additionalHeight }));
+	            var data = items.find(getDataPridicate(item));
+
+	            var props = {
+	                additionalHeight: additionalHeight,
+	                data: data,
+	                height: item.get('height'),
+	                width: item.get('width')
+	            };
+
+	            return _react2.default.createElement('div', { style: itemStyle }, _react2.default.createElement(ItemComponent, props));
 	        }
 	    }]);
 
@@ -16378,6 +16404,7 @@
 	Item.contextTypes = {
 	    ItemComponent: _react.PropTypes.func,
 	    offsetLeft: _react.PropTypes.number,
+	    items: _react.PropTypes.instanceOf(_immutable.List),
 	    additionalHeight: _react.PropTypes.number
 	};
 
@@ -16415,7 +16442,7 @@
 	    };
 	}();
 
-	var _react = __webpack_require__(18);
+	var _react = __webpack_require__(19);
 
 	var _react2 = _interopRequireDefault(_react);
 
@@ -16498,7 +16525,7 @@
 	});
 	exports.insertItems = exports.calcVisibleGrid = exports.calcGrid = exports.calcGridRow = undefined;
 
-	var _immutable = __webpack_require__(25);
+	var _immutable = __webpack_require__(17);
 
 	var scaleItemsToContainerWidth = function scaleItemsToContainerWidth(items, containerWidth, offsetLeft) {
 	    var calculatedContainerWidth = containerWidth - (items.size - 1) * offsetLeft;
@@ -17537,7 +17564,7 @@
 	'use strict';
 
 	var EventConstants = __webpack_require__(10);
-	var EventPropagators = __webpack_require__(21);
+	var EventPropagators = __webpack_require__(22);
 	var ExecutionEnvironment = __webpack_require__(4);
 	var FallbackCompositionState = __webpack_require__(123);
 	var SyntheticCompositionEvent = __webpack_require__(155);
@@ -18126,8 +18153,8 @@
 	'use strict';
 
 	var EventConstants = __webpack_require__(10);
-	var EventPluginHub = __webpack_require__(20);
-	var EventPropagators = __webpack_require__(21);
+	var EventPluginHub = __webpack_require__(21);
+	var EventPropagators = __webpack_require__(22);
 	var ExecutionEnvironment = __webpack_require__(4);
 	var ReactUpdates = __webpack_require__(8);
 	var SyntheticEvent = __webpack_require__(16);
@@ -18663,7 +18690,7 @@
 	'use strict';
 
 	var EventConstants = __webpack_require__(10);
-	var EventPropagators = __webpack_require__(21);
+	var EventPropagators = __webpack_require__(22);
 	var SyntheticMouseEvent = __webpack_require__(29);
 
 	var ReactMount = __webpack_require__(5);
@@ -19377,7 +19404,7 @@
 
 	'use strict';
 
-	var ReactInstanceMap = __webpack_require__(22);
+	var ReactInstanceMap = __webpack_require__(23);
 
 	var findDOMNode = __webpack_require__(42);
 	var warning = __webpack_require__(3);
@@ -19548,7 +19575,7 @@
 	var ReactComponentEnvironment = __webpack_require__(38);
 	var ReactCurrentOwner = __webpack_require__(11);
 	var ReactElement = __webpack_require__(6);
-	var ReactInstanceMap = __webpack_require__(22);
+	var ReactInstanceMap = __webpack_require__(23);
 	var ReactPerf = __webpack_require__(7);
 	var ReactPropTypeLocations = __webpack_require__(28);
 	var ReactPropTypeLocationNames = __webpack_require__(27);
@@ -19556,7 +19583,7 @@
 	var ReactUpdateQueue = __webpack_require__(40);
 
 	var assign = __webpack_require__(2);
-	var emptyObject = __webpack_require__(19);
+	var emptyObject = __webpack_require__(20);
 	var invariant = __webpack_require__(1);
 	var shouldUpdateReactComponent = __webpack_require__(50);
 	var warning = __webpack_require__(3);
@@ -22514,7 +22541,7 @@
 
 	'use strict';
 
-	var EventPluginHub = __webpack_require__(20);
+	var EventPluginHub = __webpack_require__(21);
 
 	function runEventQueueInBatch(events) {
 	  EventPluginHub.enqueueEvents(events);
@@ -22561,7 +22588,7 @@
 	var EventListener = __webpack_require__(53);
 	var ExecutionEnvironment = __webpack_require__(4);
 	var PooledClass = __webpack_require__(13);
-	var ReactInstanceHandles = __webpack_require__(17);
+	var ReactInstanceHandles = __webpack_require__(18);
 	var ReactMount = __webpack_require__(5);
 	var ReactUpdates = __webpack_require__(8);
 
@@ -22774,7 +22801,7 @@
 	'use strict';
 
 	var DOMProperty = __webpack_require__(14);
-	var EventPluginHub = __webpack_require__(20);
+	var EventPluginHub = __webpack_require__(21);
 	var ReactComponentEnvironment = __webpack_require__(38);
 	var ReactClass = __webpack_require__(63);
 	var ReactEmptyComponent = __webpack_require__(72);
@@ -23761,13 +23788,13 @@
 
 	var ReactDefaultBatchingStrategy = __webpack_require__(69);
 	var ReactElement = __webpack_require__(6);
-	var ReactInstanceHandles = __webpack_require__(17);
+	var ReactInstanceHandles = __webpack_require__(18);
 	var ReactMarkupChecksum = __webpack_require__(76);
 	var ReactServerBatchingStrategy = __webpack_require__(147);
 	var ReactServerRenderingTransaction = __webpack_require__(149);
 	var ReactUpdates = __webpack_require__(8);
 
-	var emptyObject = __webpack_require__(19);
+	var emptyObject = __webpack_require__(20);
 	var instantiateReactComponent = __webpack_require__(47);
 	var invariant = __webpack_require__(1);
 
@@ -24072,7 +24099,7 @@
 	'use strict';
 
 	var EventConstants = __webpack_require__(10);
-	var EventPropagators = __webpack_require__(21);
+	var EventPropagators = __webpack_require__(22);
 	var ExecutionEnvironment = __webpack_require__(4);
 	var ReactInputSelection = __webpack_require__(75);
 	var SyntheticEvent = __webpack_require__(16);
@@ -24313,7 +24340,7 @@
 
 	var EventConstants = __webpack_require__(10);
 	var EventListener = __webpack_require__(53);
-	var EventPropagators = __webpack_require__(21);
+	var EventPropagators = __webpack_require__(22);
 	var ReactMount = __webpack_require__(5);
 	var SyntheticClipboardEvent = __webpack_require__(154);
 	var SyntheticEvent = __webpack_require__(16);
@@ -24322,7 +24349,7 @@
 	var SyntheticMouseEvent = __webpack_require__(29);
 	var SyntheticDragEvent = __webpack_require__(156);
 	var SyntheticTouchEvent = __webpack_require__(160);
-	var SyntheticUIEvent = __webpack_require__(23);
+	var SyntheticUIEvent = __webpack_require__(24);
 	var SyntheticWheelEvent = __webpack_require__(161);
 
 	var emptyFunction = __webpack_require__(9);
@@ -25032,7 +25059,7 @@
 
 	'use strict';
 
-	var SyntheticUIEvent = __webpack_require__(23);
+	var SyntheticUIEvent = __webpack_require__(24);
 
 	/**
 	 * @interface FocusEvent
@@ -25117,7 +25144,7 @@
 
 	'use strict';
 
-	var SyntheticUIEvent = __webpack_require__(23);
+	var SyntheticUIEvent = __webpack_require__(24);
 
 	var getEventCharCode = __webpack_require__(43);
 	var getEventKey = __webpack_require__(166);
@@ -25207,7 +25234,7 @@
 
 	'use strict';
 
-	var SyntheticUIEvent = __webpack_require__(23);
+	var SyntheticUIEvent = __webpack_require__(24);
 
 	var getEventModifierState = __webpack_require__(44);
 

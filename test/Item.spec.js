@@ -1,3 +1,4 @@
+import {List, Map} from 'immutable'
 import React, {Component, PropTypes} from 'react'
 
 import Item from '../src/Item'
@@ -5,7 +6,7 @@ import TestUtils from 'react-addons-test-utils'
 
 import contextify from 'react-contextify'
 import expect from 'expect'
-import rndoam from 'rndoam'
+import rndoam from 'rndoam/lib/withImmutable'
 
 describe(`react-adaptive-grid`, () => {
     describe(`Item`, () => {
@@ -18,10 +19,12 @@ describe(`react-adaptive-grid`, () => {
         const WithContext = contextify({
             ItemComponent: PropTypes.func,
             additionalHeight: PropTypes.number,
+            items: PropTypes.object,
             offsetLeft: PropTypes.number
-        }, ({ItemComponent, additionalHeight, offsetLeft}) => ({
+        }, ({ItemComponent, additionalHeight, items, offsetLeft}) => ({
             ItemComponent,
             additionalHeight,
+            items,
             offsetLeft
         }))(Item)
 
@@ -30,6 +33,7 @@ describe(`react-adaptive-grid`, () => {
             const props = {
                 ItemComponent: ItemComponentMock,
                 additionalHeight: rndoam.number(),
+                items: List(),
                 offsetLeft: rndoam.number()
             }
 
@@ -43,10 +47,35 @@ describe(`react-adaptive-grid`, () => {
         })
 
         it(`should transfer props into the ItemComponent`, () => {
+            const width = rndoam.number()
+            const height = rndoam.number()
+
+            const itemFromGrid = Map({
+                id: 2,
+                width,
+                height
+            })
+
+            const itemData = Map({
+                id: 2,
+                foo: `bar`
+            })
+
+            const items = List([
+                Map({
+                    id: 1
+                }),
+                itemData,
+                Map({
+                    id: 3
+                })
+            ])
+
             const props = {
                 ItemComponent: ItemComponentMock,
-                item: rndoam.object(),
-                additionalHeight: rndoam.additionalHeight
+                additionalHeight: rndoam.additionalHeight,
+                item: itemFromGrid,
+                items
             }
 
             const tree = TestUtils.renderIntoDocument(
@@ -55,8 +84,10 @@ describe(`react-adaptive-grid`, () => {
 
             const item = TestUtils.findRenderedComponentWithType(tree, ItemComponentMock)
 
-            expect(item.props.data).toEqual(props.item)
+            expect(item.props.data).toEqual(itemData)
             expect(item.props.additionalHeight).toEqual(props.additionalHeight)
+            expect(item.props.height).toEqual(height)
+            expect(item.props.width).toEqual(width)
         })
     })
 })
