@@ -171,7 +171,6 @@
 	                });
 
 	                setTimeout(function () {
-	                    console.log('load');
 	                    var moreItems = _this2.state.items.concat(generateItems());
 	                    _this2.setState({
 	                        loading: false,
@@ -16715,7 +16714,7 @@
 	    });
 
 	    var shouldLoad = (0, _immutable.is)(visibleGrid.getIn(['rows', -1]), grid.getIn(['rows', -1]));
-	    console.log(visibleGrid.getIn(['rows', -1]) && visibleGrid.getIn(['rows', -1]).toJS(), grid.getIn(['rows', -1]) && grid.getIn(['rows', -1]).toJS());
+
 	    if (grid.get('rows').size && excludeLast) {
 	        (function () {
 	            var lastHeight = grid.getIn(['rows', -1, 'height']);
