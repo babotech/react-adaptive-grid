@@ -67,12 +67,17 @@ describe(`react-adaptive-grid`, () => {
         })
 
         it(`should calculate grid`, () => {
-            const gridState = new GridState()
 
+            const additionalHeight = rndoam.number()
             const items = rndoam.list()
             const containerWidth = rndoam.number()
             const containerHeight = rndoam.number()
             const offset = rndoam.number()
+            const offsetLeft = rndoam.number()
+            const minWidth = rndoam.number()
+            const padding = rndoam.number()
+
+            const gridState = new GridState({additionalHeight, minWidth, offsetLeft, padding})
 
             gridState.updateGrid(items, containerWidth, containerHeight, offset, true)
 
@@ -82,6 +87,12 @@ describe(`react-adaptive-grid`, () => {
             expect(gridState.more).toEqual(true)
 
             expect(calcGridSpy.calls.length).toEqual(1)
+
+            const {arguments: args} = calcGridSpy.calls[ 0 ]
+
+            expect(args).toEqual([
+                items, additionalHeight, containerWidth, minWidth, offsetLeft, padding, padding
+            ])
         })
 
         it(`should get initial state`, () => {

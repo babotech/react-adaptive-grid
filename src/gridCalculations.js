@@ -76,11 +76,10 @@ export const calcGridRow = (top, items, containerWidth, additionalHeight, minWid
 }
 
 export const calcGrid = (items, additionalHeight, containerWidth, minWidth, offsetLeft, padding = 0, initialTop = 0) => {
-    const actualInitialTop = padding + initialTop
     const actualContainerWidth = containerWidth - padding * 2
 
     let width = 0
-    let top = actualInitialTop
+    let top = initialTop
     let itemsInRow = List()
     let rows = List()
 
@@ -132,7 +131,7 @@ export const calcGrid = (items, additionalHeight, containerWidth, minWidth, offs
     }
     return Map({
         rows,
-        height: rows.reduce((acc, item) => acc + item.get(`height`), 0) + actualInitialTop
+        height: rows.reduce((acc, item) => acc + item.get(`height`), 0) + initialTop
     })
 }
 

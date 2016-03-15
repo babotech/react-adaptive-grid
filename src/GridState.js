@@ -50,7 +50,7 @@ class GridState {
 
         const initialItems = Iterable.isIterable(items) ? items : fromJS(items)
 
-        this.grid = calcGrid(initialItems, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding)
+        this.grid = calcGrid(initialItems, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding, this.padding)
     }
 
     insertItems(items, more) {

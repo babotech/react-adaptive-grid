@@ -16264,7 +16264,7 @@
 
 	            var initialItems = _immutable.Iterable.isIterable(items) ? items : (0, _immutable.fromJS)(items);
 
-	            this.grid = (0, _gridCalculations.calcGrid)(initialItems, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding);
+	            this.grid = (0, _gridCalculations.calcGrid)(initialItems, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding, this.padding);
 	        }
 	    }, {
 	        key: 'insertItems',
@@ -16603,11 +16603,10 @@
 	    var padding = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
 	    var initialTop = arguments.length <= 6 || arguments[6] === undefined ? 0 : arguments[6];
 
-	    var actualInitialTop = padding + initialTop;
 	    var actualContainerWidth = containerWidth - padding * 2;
 
 	    var width = 0;
-	    var top = actualInitialTop;
+	    var top = initialTop;
 	    var itemsInRow = (0, _immutable.List)();
 	    var rows = (0, _immutable.List)();
 
@@ -16659,7 +16658,7 @@
 	        rows: rows,
 	        height: rows.reduce(function (acc, item) {
 	            return acc + item.get('height');
-	        }, 0) + actualInitialTop
+	        }, 0) + initialTop
 	    });
 	};
 

@@ -482,7 +482,7 @@ describe(`react-adaptive-grid`, () => {
                 const minWidth = 100
                 const offsetLeft = 0
 
-                expect(calcGrid(items, additionalHeight, containerWidth, minWidth, offsetLeft, padding))
+                expect(calcGrid(items, additionalHeight, containerWidth, minWidth, offsetLeft, padding, padding))
                     .toEqualImmutable(
                         Map({
                             rows: List([
