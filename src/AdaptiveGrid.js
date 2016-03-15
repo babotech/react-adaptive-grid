@@ -1,7 +1,6 @@
-import {Iterable, List, fromJS} from 'immutable'
 import React, {Component, PropTypes} from 'react'
-
 import Display from './Display'
+import {List} from 'immutable'
 
 class AdaptiveGrid extends Component {
 

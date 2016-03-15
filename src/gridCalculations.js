@@ -76,7 +76,8 @@ export const calcGridRow = (top, items, containerWidth, additionalHeight, minWid
 }
 
 export const calcGrid = (items, additionalHeight, containerWidth, minWidth, offsetLeft, padding = 0, initialTop = 0) => {
-    const actualContainerWidth = containerWidth - padding * 2
+    const double = 2
+    const actualContainerWidth = containerWidth - padding * double
 
     let width = 0
     let top = initialTop
