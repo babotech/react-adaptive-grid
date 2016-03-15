@@ -17,13 +17,13 @@ npm install --save react-adaptive-grid
 import Grid from 'react-adaptive-grid'
 
 // Regular array or Immutable.js List
-const items = [
-    {id:1, foo: 'bar', width: 200, height: 300},
+const items = List([
+    Map({id:1, foo: 'bar', width: 200, height: 300}),
     ...
-]
+])
 
 // Your component must accept 'data' prop.
-const ItemComponent = ({data}) => ( // data = Map({id,foo,width,height,origWidth,origHeight})
+const ItemComponent = ({data, width, height, additionalHeight}) => (
     ...
 )
 
