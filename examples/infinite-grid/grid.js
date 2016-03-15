@@ -15711,7 +15711,7 @@
 	var _Display2 = _interopRequireDefault(_Display);
 
 	function _interopRequireDefault(obj) {
-	    return obj && obj.__esModule ? obj : { "default": obj };
+	    return obj && obj.__esModule ? obj : { default: obj };
 	}
 
 	function _classCallCheck(instance, Constructor) {
@@ -15746,10 +15746,12 @@
 	        value: function getChildContext() {
 	            var _props = this.props;
 	            var ItemComponent = _props.ItemComponent;
+	            var additionalHeight = _props.additionalHeight;
 	            var offsetLeft = _props.offsetLeft;
 
 	            return {
 	                ItemComponent: ItemComponent,
+	                additionalHeight: additionalHeight,
 	                offsetLeft: offsetLeft
 	            };
 	        }
@@ -15757,6 +15759,7 @@
 	        key: 'render',
 	        value: function render() {
 	            var _props2 = this.props;
+	            var additionalHeight = _props2.additionalHeight;
 	            var minWidth = _props2.minWidth;
 	            var padding = _props2.padding;
 	            var offsetLeft = _props2.offsetLeft;
@@ -15766,7 +15769,8 @@
 
 	            var items = _immutable.Iterable.isIterable(this.props.items) ? this.props.items : (0, _immutable.fromJS)(this.props.items);
 
-	            return _react2["default"].createElement(_Display2["default"], {
+	            var displayProps = {
+	                additionalHeight: additionalHeight,
 	                items: items,
 	                minWidth: minWidth,
 	                padding: padding,
@@ -15774,7 +15778,9 @@
 	                load: load,
 	                loading: loading,
 	                more: more
-	            });
+	            };
+
+	            return _react2.default.createElement(_Display2.default, displayProps);
 	        }
 	    }]);
 
@@ -15793,11 +15799,13 @@
 
 	AdaptiveGrid.childContextTypes = {
 	    ItemComponent: _react.PropTypes.func,
+	    additionalHeight: _react.PropTypes.number,
 	    offsetLeft: _react.PropTypes.number
 	};
 
 	AdaptiveGrid.propTypes = {
 	    ItemComponent: _react.PropTypes.func.isRequired,
+	    additionalHeight: _react.PropTypes.number,
 	    minWidth: _react.PropTypes.number.isRequired,
 	    items: _react.PropTypes.oneOfType([_react.PropTypes.array, _react.PropTypes.object]).isRequired,
 	    padding: _react.PropTypes.number,
@@ -15805,7 +15813,7 @@
 	    load: _react.PropTypes.func
 	};
 
-	exports["default"] = AdaptiveGrid;
+	exports.default = AdaptiveGrid;
 
 /***/ },
 /* 90 */
@@ -15856,7 +15864,7 @@
 	var _gridStateFactory2 = _interopRequireDefault(_gridStateFactory);
 
 	function _interopRequireDefault(obj) {
-	    return obj && obj.__esModule ? obj : { "default": obj };
+	    return obj && obj.__esModule ? obj : { default: obj };
 	}
 
 	function _classCallCheck(instance, Constructor) {
@@ -15919,7 +15927,7 @@
 	};
 
 	var createWindowResizeListener = function createWindowResizeListener(inst) {
-	    inst.windowResizeListener = (0, _throttle2["default"])(function () {
+	    inst.windowResizeListener = (0, _throttle2.default)(function () {
 	        var _getDisplaySize2 = getDisplaySize(inst);
 
 	        var scrollTop = _getDisplaySize2.scrollTop;
@@ -15950,7 +15958,7 @@
 	        var padding = props.padding;
 	        var more = props.more;
 
-	        _this.gridState = (0, _gridStateFactory2["default"])({ additionalHeight: additionalHeight, minWidth: minWidth, offsetLeft: offsetLeft, padding: padding, more: more });
+	        _this.gridState = (0, _gridStateFactory2.default)({ additionalHeight: additionalHeight, minWidth: minWidth, offsetLeft: offsetLeft, padding: padding, more: more });
 
 	        _this.state = _this.gridState.getState();
 	        return _this;
@@ -16021,21 +16029,21 @@
 
 	            var offsetLeft = this.props.offsetLeft;
 
-	            return _react2["default"].createElement('div', { ref: function ref(display) {
+	            return _react2.default.createElement('div', { ref: function ref(display) {
 	                    _this2.display = display;
 	                },
 	                style: displayStyle
-	            }, _react2["default"].createElement('div', { ref: function ref(content) {
+	            }, _react2.default.createElement('div', { ref: function ref(content) {
 	                    _this2.content = content;
 	                }
-	            }, _react2["default"].createElement(_Grid2["default"], _extends({}, this.state, { offsetLeft: offsetLeft }))));
+	            }, _react2.default.createElement(_Grid2.default, _extends({}, this.state, { offsetLeft: offsetLeft }))));
 	        }
 	    }]);
 
 	    return Display;
 	}(_react.Component);
 
-	exports["default"] = Display;
+	exports.default = Display;
 
 /***/ },
 /* 91 */
@@ -16080,7 +16088,7 @@
 	var _Row2 = _interopRequireDefault(_Row);
 
 	function _interopRequireDefault(obj) {
-	    return obj && obj.__esModule ? obj : { "default": obj };
+	    return obj && obj.__esModule ? obj : { default: obj };
 	}
 
 	function _classCallCheck(instance, Constructor) {
@@ -16143,8 +16151,8 @@
 	                height: offset
 	            });
 
-	            return _react2["default"].createElement('div', { style: contentStyle }, _react2["default"].createElement('div', { style: scrollHelperStyle }), rows.map(function (row, index) {
-	                return _react2["default"].createElement(_Row2["default"], { key: index, row: row });
+	            return _react2.default.createElement('div', { style: contentStyle }, _react2.default.createElement('div', { style: scrollHelperStyle }), rows.map(function (row, index) {
+	                return _react2.default.createElement(_Row2.default, { key: index, row: row });
 	            }).toArray());
 	        }
 	    }]);
@@ -16152,7 +16160,7 @@
 	    return Grid;
 	}(_react.Component);
 
-	exports["default"] = Grid;
+	exports.default = Grid;
 
 /***/ },
 /* 92 */
@@ -16272,7 +16280,7 @@
 	    return GridState;
 	}();
 
-	exports["default"] = GridState;
+	exports.default = GridState;
 
 /***/ },
 /* 93 */
@@ -16311,7 +16319,7 @@
 	var _react2 = _interopRequireDefault(_react);
 
 	function _interopRequireDefault(obj) {
-	    return obj && obj.__esModule ? obj : { "default": obj };
+	    return obj && obj.__esModule ? obj : { default: obj };
 	}
 
 	function _classCallCheck(instance, Constructor) {
@@ -16353,13 +16361,14 @@
 	            var item = this.props.item;
 	            var _context = this.context;
 	            var ItemComponent = _context.ItemComponent;
+	            var additionalHeight = _context.additionalHeight;
 	            var offsetLeft = _context.offsetLeft;
 
 	            var itemStyle = _extends({}, defaultItemStyle, {
 	                marginLeft: offsetLeft
 	            });
 
-	            return _react2["default"].createElement('div', { style: itemStyle }, _react2["default"].createElement(ItemComponent, { data: item }));
+	            return _react2.default.createElement('div', { style: itemStyle }, _react2.default.createElement(ItemComponent, { data: item, additionalHeight: additionalHeight }));
 	        }
 	    }]);
 
@@ -16368,10 +16377,11 @@
 
 	Item.contextTypes = {
 	    ItemComponent: _react.PropTypes.func,
-	    offsetLeft: _react.PropTypes.number
+	    offsetLeft: _react.PropTypes.number,
+	    additionalHeight: _react.PropTypes.number
 	};
 
-	exports["default"] = Item;
+	exports.default = Item;
 
 /***/ },
 /* 94 */
@@ -16414,7 +16424,7 @@
 	var _Item2 = _interopRequireDefault(_Item);
 
 	function _interopRequireDefault(obj) {
-	    return obj && obj.__esModule ? obj : { "default": obj };
+	    return obj && obj.__esModule ? obj : { default: obj };
 	}
 
 	function _classCallCheck(instance, Constructor) {
@@ -16462,8 +16472,8 @@
 	                marginLeft: -offsetLeft
 	            });
 
-	            return _react2["default"].createElement('div', { style: rowStyle }, row.get('items').map(function (item, index) {
-	                return _react2["default"].createElement(_Item2["default"], { key: index, item: item });
+	            return _react2.default.createElement('div', { style: rowStyle }, row.get('items').map(function (item, index) {
+	                return _react2.default.createElement(_Item2.default, { key: index, item: item });
 	            }).toArray());
 	        }
 	    }]);
@@ -16475,7 +16485,7 @@
 	    offsetLeft: _react.PropTypes.number
 	};
 
-	exports["default"] = Row;
+	exports.default = Row;
 
 /***/ },
 /* 95 */
@@ -16731,7 +16741,7 @@
 	var _GridState2 = _interopRequireDefault(_GridState);
 
 	function _interopRequireDefault(obj) {
-	  return obj && obj.__esModule ? obj : { "default": obj };
+	  return obj && obj.__esModule ? obj : { default: obj };
 	}
 
 	var gridStateFactory = function gridStateFactory() {
@@ -16739,10 +16749,10 @@
 	    args[_key] = arguments[_key];
 	  }
 
-	  return new (Function.prototype.bind.apply(_GridState2["default"], [null].concat(args)))();
+	  return new (Function.prototype.bind.apply(_GridState2.default, [null].concat(args)))();
 	};
 
-	exports["default"] = gridStateFactory;
+	exports.default = gridStateFactory;
 
 /***/ },
 /* 97 */
@@ -16759,12 +16769,12 @@
 	Object.defineProperty(exports, 'default', {
 	  enumerable: true,
 	  get: function get() {
-	    return _interopRequireDefault(_AdaptiveGrid)["default"];
+	    return _interopRequireDefault(_AdaptiveGrid).default;
 	  }
 	});
 
 	function _interopRequireDefault(obj) {
-	  return obj && obj.__esModule ? obj : { "default": obj };
+	  return obj && obj.__esModule ? obj : { default: obj };
 	}
 
 /***/ },
@@ -16792,7 +16802,7 @@
 	    };
 	};
 
-	exports["default"] = debounce;
+	exports.default = debounce;
 
 /***/ },
 /* 99 */
