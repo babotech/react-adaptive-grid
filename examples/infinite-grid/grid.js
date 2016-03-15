@@ -171,11 +171,12 @@
 	                });
 
 	                setTimeout(function () {
+	                    console.log('load');
 	                    var moreItems = _this2.state.items.concat(generateItems());
 	                    _this2.setState({
 	                        loading: false,
 	                        items: moreItems,
-	                        more: moreItems.length < max
+	                        more: moreItems.size < max
 	                    });
 	                }, 1000);
 	            };
@@ -16713,19 +16714,21 @@
 	        return acc;
 	    });
 
-	    var shouldLoad = false;
-	    if (visibleGrid.get('rows').size && excludeLast && visibleGrid.getIn(['rows', -1]) === grid.getIn(['rows', -1])) {
+	    var shouldLoad = (0, _immutable.is)(visibleGrid.getIn(['rows', -1]), grid.getIn(['rows', -1]));
+	    console.log(visibleGrid.getIn(['rows', -1]) && visibleGrid.getIn(['rows', -1]).toJS(), grid.getIn(['rows', -1]) && grid.getIn(['rows', -1]).toJS());
+	    if (grid.get('rows').size && excludeLast) {
 	        (function () {
-	            var lastHeight = visibleGrid.getIn(['rows', -1, 'height']);
+	            var lastHeight = grid.getIn(['rows', -1, 'height']);
 
-	            visibleGrid = visibleGrid.update('rows', function (r) {
-	                return r.skipLast(1);
-	            });
+	            if (shouldLoad) {
+	                visibleGrid = visibleGrid.update('rows', function (r) {
+	                    return r.skipLast(1);
+	                });
+	            }
 
 	            visibleGrid = visibleGrid.update('height', function (h) {
 	                return h - lastHeight;
 	            });
-	            shouldLoad = true;
 	        })();
 	    }
 

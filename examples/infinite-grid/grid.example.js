@@ -83,7 +83,7 @@ class Container extends Component {
                 this.setState({
                     loading: false,
                     items: moreItems,
-                    more: moreItems.length < max
+                    more: moreItems.size < max
                 })
             }, 1000)
         }

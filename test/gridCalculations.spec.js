@@ -699,6 +699,44 @@ describe(`react-adaptive-grid`, () => {
                         height: 280
                     }))
             })
+
+            it(`should return shouldLoad=false`, () => {
+                const grid = Map({
+                    rows: List([
+                        Map({
+                            items: List(),
+                            top: 0,
+                            height: 140
+                        }),
+                        Map({
+                            items: List(),
+                            top: 140,
+                            height: 140
+                        }),
+                        Map({
+                            items: List(),
+                            top: 280,
+                            height: 140
+                        })
+                    ]),
+                    height: 420
+                })
+                const visibleAreaHeight = 140
+                const offset = 0
+
+                expect(calcVisibleGrid(grid, visibleAreaHeight, offset, true))
+                    .toEqualImmutable(Map({
+                        rows: List([
+                            Map({
+                                items: List(),
+                                top: 0,
+                                height: 140
+                            })
+                        ]),
+                        shouldLoad: false,
+                        height: 280
+                    }))
+            })
         })
 
         describe(`insertItems->`, () => {
