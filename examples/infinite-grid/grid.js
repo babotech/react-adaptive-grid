@@ -15705,8 +15705,6 @@
 	    };
 	}();
 
-	var _immutable = __webpack_require__(17);
-
 	var _react = __webpack_require__(19);
 
 	var _react2 = _interopRequireDefault(_react);
@@ -15714,6 +15712,8 @@
 	var _Display = __webpack_require__(90);
 
 	var _Display2 = _interopRequireDefault(_Display);
+
+	var _immutable = __webpack_require__(17);
 
 	function _interopRequireDefault(obj) {
 	    return obj && obj.__esModule ? obj : { default: obj };
@@ -16013,9 +16013,9 @@
 	            var load = nextProps.load;
 	            var loading = nextProps.loading;
 	            var more = nextProps.more;
-	            var shouldLoad = nextState.shouldLoad;
+	            var loadMoreAllowed = nextState.loadMoreAllowed;
 
-	            if (more && !loading && shouldLoad) {
+	            if (more && !loading && loadMoreAllowed) {
 	                load();
 	            }
 	        }
@@ -16229,6 +16229,11 @@
 	        var offsetLeft = _ref$offsetLeft === undefined ? 0 : _ref$offsetLeft;
 	        var _ref$padding = _ref.padding;
 	        var padding = _ref$padding === undefined ? 0 : _ref$padding;
+	        var _ref$grid = _ref.grid;
+	        var grid = _ref$grid === undefined ? (0, _immutable.Map)({
+	            rows: (0, _immutable.List)(),
+	            height: 0
+	        }) : _ref$grid;
 
 	        _classCallCheck(this, GridState);
 
@@ -16240,18 +16245,20 @@
 	        this.offset = offset;
 	        this.offsetLeft = offsetLeft;
 	        this.padding = padding;
-	        this.grid = (0, _immutable.Map)({
-	            rows: (0, _immutable.List)(),
-	            height: 0
-	        });
+	        this.grid = grid;
 	    }
 
 	    _createClass(GridState, [{
 	        key: 'getState',
 	        value: function getState() {
-	            var visibleGrid = (0, _gridCalculations.calcVisibleGrid)(this.grid, this.containerHeight, this.offset, this.more);
+	            var grid = this.more ? (0, _gridCalculations.calcGridExcludeLastRow)(this.grid) : this.grid;
+
+	            var visibleGrid = (0, _gridCalculations.calcVisibleGrid)(grid, this.containerHeight, this.offset);
+
+	            var loadMoreAllowed = (0, _immutable.is)(grid.getIn(['rows', -1]), visibleGrid.getIn(['rows', -1]));
 
 	            return _extends({
+	                loadMoreAllowed: loadMoreAllowed,
 	                offset: visibleGrid.getIn(['rows', 0, 'top']) || 0,
 	                padding: this.padding
 	            }, visibleGrid.toObject());
@@ -16269,18 +16276,14 @@
 	            this.offset = offset;
 	            this.more = more;
 
-	            var initialItems = _immutable.Iterable.isIterable(items) ? items : (0, _immutable.fromJS)(items);
-
-	            this.grid = (0, _gridCalculations.calcGrid)(initialItems, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding, this.padding);
+	            this.grid = (0, _gridCalculations.calcGrid)(items, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding, this.padding);
 	        }
 	    }, {
 	        key: 'insertItems',
 	        value: function insertItems(items, more) {
 	            this.more = more;
 
-	            var itemsToInsert = _immutable.Iterable.isIterable(items) ? items : (0, _immutable.fromJS)(items);
-
-	            this.grid = (0, _gridCalculations.insertItems)(this.grid, itemsToInsert, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding);
+	            this.grid = (0, _gridCalculations.insertItems)(this.grid, items, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding);
 	        }
 	    }]);
 
@@ -16523,7 +16526,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.insertItems = exports.calcVisibleGrid = exports.calcGrid = exports.calcGridRow = undefined;
+	exports.insertItems = exports.calcVisibleGrid = exports.calcGridExcludeLastRow = exports.calcGrid = exports.calcGridRow = undefined;
 
 	var _immutable = __webpack_require__(17);
 
@@ -16630,7 +16633,8 @@
 	    var padding = arguments.length <= 5 || arguments[5] === undefined ? 0 : arguments[5];
 	    var initialTop = arguments.length <= 6 || arguments[6] === undefined ? 0 : arguments[6];
 
-	    var actualContainerWidth = containerWidth - padding * 2;
+	    var double = 2;
+	    var actualContainerWidth = containerWidth - padding * double;
 
 	    var width = 0;
 	    var top = initialTop;
@@ -16689,10 +16693,19 @@
 	    });
 	};
 
-	var calcVisibleGrid = exports.calcVisibleGrid = function calcVisibleGrid(grid, visibleAreaHeight, offset) {
-	    var excludeLast = arguments.length <= 3 || arguments[3] === undefined ? false : arguments[3];
+	var calcGridExcludeLastRow = exports.calcGridExcludeLastRow = function calcGridExcludeLastRow(grid) {
+	    return grid.get('rows').size ? grid.update(function (g) {
+	        return g.update('height', function (h) {
+	            return h - g.getIn(['rows', -1, 'height']);
+	        }).update('rows', function (r) {
+	            return r.skipLast(1);
+	        });
+	    }) : grid;
+	};
 
-	    var visibleGrid = grid.update('rows', function (r) {
+	var calcVisibleGrid = exports.calcVisibleGrid = function calcVisibleGrid(grid, visibleAreaHeight, offset) {
+
+	    return grid.update('rows', function (r) {
 	        var acc = (0, _immutable.List)();
 	        r.some(function (it) {
 	            var top = it.get('top');
@@ -16712,26 +16725,6 @@
 	        });
 	        return acc;
 	    });
-
-	    var shouldLoad = (0, _immutable.is)(visibleGrid.getIn(['rows', -1]), grid.getIn(['rows', -1]));
-
-	    if (grid.get('rows').size && excludeLast) {
-	        (function () {
-	            var lastHeight = grid.getIn(['rows', -1, 'height']);
-
-	            if (shouldLoad) {
-	                visibleGrid = visibleGrid.update('rows', function (r) {
-	                    return r.skipLast(1);
-	                });
-	            }
-
-	            visibleGrid = visibleGrid.update('height', function (h) {
-	                return h - lastHeight;
-	            });
-	        })();
-	    }
-
-	    return visibleGrid.set('shouldLoad', shouldLoad);
 	};
 
 	var insertItems = exports.insertItems = function insertItems(grid, items, additionalHeight, containerWidth, minWidth, offsetLeft) {

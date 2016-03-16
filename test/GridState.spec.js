@@ -13,6 +13,7 @@ describe(`react-adaptive-grid`, () => {
         let GridState
 
         const calcVisibleGridSpy = expect.createSpy()
+        const calcGridExcludeLastRowSpy = expect.createSpy()
         const calcGridSpy = expect.createSpy()
         const insertItemsSpy = expect.createSpy()
 
@@ -23,6 +24,7 @@ describe(`react-adaptive-grid`, () => {
             })
             mockery.registerMock(`./gridCalculations`, {
                 calcGrid: calcGridSpy,
+                calcGridExcludeLastRow: calcGridExcludeLastRowSpy,
                 calcVisibleGrid: calcVisibleGridSpy,
                 insertItems: insertItemsSpy
             });
@@ -113,6 +115,7 @@ describe(`react-adaptive-grid`, () => {
 
             expect(gridState.getState())
                 .toEqual({
+                    loadMoreAllowed: false,
                     offset,
                     rows,
                     height,
@@ -121,14 +124,50 @@ describe(`react-adaptive-grid`, () => {
             expect(calcVisibleGridSpy.calls.length).toEqual(1)
         })
 
-        it(`should not display last row if loading expected`, () => {
+        it(`should pass into calcVisible function grid without last ro if loading awaiting`, () => {
+            const grid = Map({
+                rows: List([
+                    Map(),
+                    Map()
+                ])
+            })
+
             const gridState = new GridState({
+                grid,
                 more: true
             })
+
+            const gridExcludeLastRow = Map({
+                rows: List([
+                    Map()
+                ])
+            })
+
+            calcGridExcludeLastRowSpy.andReturn(gridExcludeLastRow)
+
             gridState.getState()
 
-            const {arguments: args} = calcVisibleGridSpy.calls[ 0 ]
-            expect(args[ args.length - 1 ]).toEqual(true)
+            const {arguments: args} = calcVisibleGridSpy.calls[0]
+
+            expect(args[0])
+                .toBe(gridExcludeLastRow)
+        })
+
+        it(`should allow to load more items if last row is visible`, () => {
+            const grid = Map({
+                rows: List([
+                    Map(),
+                    Map()
+                ])
+            })
+
+            const gridState = new GridState({
+                grid
+            })
+
+            calcVisibleGridSpy.andReturn(grid)
+
+            expect(gridState.getState().loadMoreAllowed).toBeTruthy()
         })
 
         it(`should insert items and update more`, () => {

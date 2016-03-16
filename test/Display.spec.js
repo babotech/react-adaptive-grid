@@ -347,7 +347,7 @@ describe(`react-adaptive-grid`, () => {
             gridStateMock
                 .getState
                 .andReturn({
-                    shouldLoad: true
+                    loadMoreAllowed: true
                 })
 
             TestUtils.renderIntoDocument(

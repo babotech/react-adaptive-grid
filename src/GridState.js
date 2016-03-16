@@ -1,5 +1,5 @@
-import {Iterable, List, Map, fromJS} from 'immutable'
-import {calcGrid, calcVisibleGrid, insertItems} from './gridCalculations'
+import {List, Map, is} from 'immutable'
+import {calcGrid, calcGridExcludeLastRow, calcVisibleGrid, insertItems} from './gridCalculations'
 
 class GridState {
 
@@ -11,7 +11,11 @@ class GridState {
         more = false,
         offset = 0,
         offsetLeft = 0,
-        padding = 0
+        padding = 0,
+        grid = Map({
+            rows: List(),
+            height: 0
+        })
         } = {}) {
 
         this.additionalHeight = additionalHeight
@@ -22,16 +26,18 @@ class GridState {
         this.offset = offset
         this.offsetLeft = offsetLeft
         this.padding = padding
-        this.grid = Map({
-            rows: List(),
-            height: 0
-        })
+        this.grid = grid
     }
 
     getState() {
-        const visibleGrid = calcVisibleGrid(this.grid, this.containerHeight, this.offset, this.more)
+        const grid = this.more ? calcGridExcludeLastRow(this.grid) : this.grid
+
+        const visibleGrid = calcVisibleGrid(grid, this.containerHeight, this.offset)
+
+        const loadMoreAllowed = is(grid.getIn([ `rows`, -1 ]), visibleGrid.getIn([ `rows`, -1 ]))
 
         return {
+            loadMoreAllowed,
             offset: visibleGrid.getIn([ `rows`, 0, `top` ]) || 0,
             padding: this.padding,
             ...visibleGrid.toObject()
@@ -48,17 +54,13 @@ class GridState {
         this.offset = offset
         this.more = more
 
-        const initialItems = Iterable.isIterable(items) ? items : fromJS(items)
-
-        this.grid = calcGrid(initialItems, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding, this.padding)
+        this.grid = calcGrid(items, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding, this.padding)
     }
 
     insertItems(items, more) {
         this.more = more
 
-        const itemsToInsert = Iterable.isIterable(items) ? items : fromJS(items)
-
-        this.grid = insertItems(this.grid, itemsToInsert, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding)
+        this.grid = insertItems(this.grid, items, this.additionalHeight, this.containerWidth, this.minWidth, this.offsetLeft, this.padding)
     }
 }
 

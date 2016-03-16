@@ -85,8 +85,9 @@ class Display extends Component {
 
     componentWillUpdate(nextProps, nextState) {
         const {load, loading, more} = nextProps
-        const {shouldLoad} = nextState
-        if (more && !loading && shouldLoad) {
+        const {loadMoreAllowed} = nextState
+
+        if (more && !loading && loadMoreAllowed) {
             load()
         }
     }

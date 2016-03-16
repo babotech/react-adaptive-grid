@@ -2,7 +2,7 @@
 
 import {List, Map} from 'immutable'
 
-import {calcGrid, calcGridRow, calcVisibleGrid, insertItems} from '../src/gridCalculations'
+import {calcGrid, calcGridExcludeLastRow, calcGridRow, calcVisibleGrid, insertItems} from '../src/gridCalculations'
 
 import expect from 'expect'
 import expectImmutable from 'expect-immutable'
@@ -517,6 +517,58 @@ describe(`react-adaptive-grid`, () => {
             })
         })
 
+        describe(`calcGridExcludeLastRow`, () => {
+            it(`should return grid without last row`, () => {
+                const grid = Map({
+                    rows: List([
+                        Map({
+                            items: List(),
+                            top: 0,
+                            height: 140
+                        }),
+                        Map({
+                            items: List(),
+                            top: 140,
+                            height: 140
+                        }),
+                        Map({
+                            items: List(),
+                            top: 280,
+                            height: 140
+                        })
+                    ]),
+                    height: 420
+                })
+
+                expect(calcGridExcludeLastRow(grid))
+                    .toEqualImmutable(Map({
+                        rows: List([
+                            Map({
+                                items: List(),
+                                top: 0,
+                                height: 140
+                            }),
+                            Map({
+                                items: List(),
+                                top: 140,
+                                height: 140
+                            })
+                        ]),
+                        height: 280
+                    }))
+            })
+
+            it(`should not touch grid if it hasn't rows`, () => {
+                const grid = Map({
+                    rows: List(),
+                    height: 0
+                })
+
+                expect(calcGridExcludeLastRow(grid))
+                    .toBe(grid)
+            })
+        })
+
         describe(`calcVisibleGrid->`, () => {
             it(`should render only 1 row`, () => {
                 const grid = Map({
@@ -551,7 +603,6 @@ describe(`react-adaptive-grid`, () => {
                                 height: 140
                             })
                         ]),
-                        shouldLoad: false,
                         height: 420
                     }))
             })
@@ -599,7 +650,6 @@ describe(`react-adaptive-grid`, () => {
                                 height: 140
                             })
                         ]),
-                        shouldLoad: false,
                         height: 560
                     }))
             })
@@ -652,91 +702,10 @@ describe(`react-adaptive-grid`, () => {
                                 height: 140
                             })
                         ]),
-                        shouldLoad: false,
                         height: 560
                     }))
             })
 
-            it(`should exclude last row`, () => {
-                const grid = Map({
-                    rows: List([
-                        Map({
-                            items: List(),
-                            top: 0,
-                            height: 140
-                        }),
-                        Map({
-                            items: List(),
-                            top: 140,
-                            height: 140
-                        }),
-                        Map({
-                            items: List(),
-                            top: 280,
-                            height: 140
-                        })
-                    ]),
-                    height: 420
-                })
-                const visibleAreaHeight = 240
-                const offset = 130
-
-                expect(calcVisibleGrid(grid, visibleAreaHeight, offset, true))
-                    .toEqualImmutable(Map({
-                        rows: List([
-                            Map({
-                                items: List(),
-                                top: 0,
-                                height: 140
-                            }),
-                            Map({
-                                items: List(),
-                                top: 140,
-                                height: 140
-                            })
-                        ]),
-                        shouldLoad: true,
-                        height: 280
-                    }))
-            })
-
-            it(`should return shouldLoad=false`, () => {
-                const grid = Map({
-                    rows: List([
-                        Map({
-                            items: List(),
-                            top: 0,
-                            height: 140
-                        }),
-                        Map({
-                            items: List(),
-                            top: 140,
-                            height: 140
-                        }),
-                        Map({
-                            items: List(),
-                            top: 280,
-                            height: 140
-                        })
-                    ]),
-                    height: 420
-                })
-                const visibleAreaHeight = 140
-                const offset = 0
-
-                expect(calcVisibleGrid(grid, visibleAreaHeight, offset, true))
-                    .toEqualImmutable(Map({
-                        rows: List([
-                            Map({
-                                items: List(),
-                                top: 0,
-                                height: 140
-                            })
-                        ]),
-                        shouldLoad: false,
-                        height: 280
-                    }))
-            })
         })
 
         describe(`insertItems->`, () => {

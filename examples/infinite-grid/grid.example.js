@@ -93,7 +93,6 @@ class Container extends Component {
             load
         }
 
-
         return <AdaptiveGrid {...props} />
     }
 }

@@ -1,4 +1,4 @@
-import {List, Map, is} from 'immutable'
+import {List, Map} from 'immutable'
 
 const scaleItemsToContainerWidth = (items, containerWidth, offsetLeft) => {
     const calculatedContainerWidth = containerWidth - (items.size - 1) * offsetLeft
@@ -136,9 +136,16 @@ export const calcGrid = (items, additionalHeight, containerWidth, minWidth, offs
     })
 }
 
-export const calcVisibleGrid = (grid, visibleAreaHeight, offset, excludeLast = false) => {
+export const calcGridExcludeLastRow = (grid) => {
+    return grid.get(`rows`).size ? grid.update(g => g
+        .update(`height`, h => h - g.getIn([ `rows`, -1, `height` ]))
+        .update(`rows`, r => r.skipLast(1))
+    ) : grid
+}
 
-    let visibleGrid = grid.update(`rows`, r => {
+export const calcVisibleGrid = (grid, visibleAreaHeight, offset) => {
+
+    return grid.update(`rows`, r => {
         let acc = List()
         r.some((it) => {
             const top = it.get(`top`)
@@ -159,22 +166,6 @@ export const calcVisibleGrid = (grid, visibleAreaHeight, offset, excludeLast = f
         })
         return acc
     })
-
-    const shouldLoad = is(visibleGrid.getIn([ `rows`, -1 ]), grid.getIn([ `rows`, -1 ]))
-
-    if (grid.get(`rows`).size &&
-        excludeLast) {
-        const lastHeight = grid.getIn([ `rows`, -1, `height` ])
-
-        if (shouldLoad) {
-            visibleGrid = visibleGrid.update(`rows`, r => r.skipLast(1))
-        }
-
-        visibleGrid = visibleGrid.update(`height`, h => h - lastHeight)
-    }
-
-
-    return visibleGrid.set(`shouldLoad`, shouldLoad)
 }
 
 export const insertItems = (grid, items, additionalHeight, containerWidth, minWidth, offsetLeft, padding = 0) => {
