@@ -64,6 +64,7 @@ describe(`react-adaptive-grid`, () => {
             const props = {
                 ItemComponent: rndoam.noop(),
                 additionalHeight: rndoam.number(),
+                buffer: rndoam.number(),
                 minWidth: rndoam.number(),
                 padding: rndoam.number(),
                 offsetLeft: rndoam.number(),

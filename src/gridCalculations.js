@@ -145,27 +145,26 @@ export const calcGridExcludeLastRow = (grid) => {
 
 export const calcVisibleGrid = (grid, visibleAreaHeight, offset) => {
 
-    return grid.update(`rows`, r => {
+    let lastVisibleRowIndex = 0
+    return [ grid.update(`rows`, r => {
         let acc = List()
-        r.some((it) => {
+        r.some((it, i) => {
             const top = it.get(`top`)
             const height = it.get(`height`)
 
-
-            if (top >= offset) {
+            if (top >= offset || top + height > offset) {
                 if (top >= offset + visibleAreaHeight) {
                     return true
                 }
 
-                acc = acc.push(it)
-            } else if (top + height > offset) {
+                lastVisibleRowIndex = i
                 acc = acc.push(it)
             }
 
             return false
         })
         return acc
-    })
+    }), lastVisibleRowIndex ]
 }
 
 export const insertItems = (grid, items, additionalHeight, containerWidth, minWidth, offsetLeft, padding = 0) => {

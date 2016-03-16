@@ -595,7 +595,7 @@ describe(`react-adaptive-grid`, () => {
                 const offset = 140
 
                 expect(calcVisibleGrid(grid, visibleAreaHeight, offset))
-                    .toEqualImmutable(Map({
+                    .toEqual([ Map({
                         rows: List([
                             Map({
                                 items: List(),
@@ -604,7 +604,7 @@ describe(`react-adaptive-grid`, () => {
                             })
                         ]),
                         height: 420
-                    }))
+                    }), 1 ])
             })
 
             it(`should render only 2 rows`, () => {
@@ -637,7 +637,7 @@ describe(`react-adaptive-grid`, () => {
                 const offset = 140
 
                 expect(calcVisibleGrid(grid, visibleAreaHeight, offset))
-                    .toEqualImmutable(Map({
+                    .toEqual([ Map({
                         rows: List([
                             Map({
                                 items: List(),
@@ -651,7 +651,7 @@ describe(`react-adaptive-grid`, () => {
                             })
                         ]),
                         height: 560
-                    }))
+                    }), 2 ])
             })
 
             it(`should render rows if partially visible`, () => {
@@ -684,7 +684,7 @@ describe(`react-adaptive-grid`, () => {
                 const offset = 130
 
                 expect(calcVisibleGrid(grid, visibleAreaHeight, offset))
-                    .toEqualImmutable(Map({
+                    .toEqual([ Map({
                         rows: List([
                             Map({
                                 items: List(),
@@ -703,7 +703,7 @@ describe(`react-adaptive-grid`, () => {
                             })
                         ]),
                         height: 560
-                    }))
+                    }), 2 ])
             })
 
         })

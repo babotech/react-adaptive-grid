@@ -5,6 +5,7 @@ class GridState {
 
     constructor({
         additionalHeight = 0,
+        buffer = 0,
         containerWidth = 0,
         containerHeight = 0,
         minWidth = 0,
@@ -19,6 +20,7 @@ class GridState {
         } = {}) {
 
         this.additionalHeight = additionalHeight
+        this.buffer = buffer
         this.containerWidth = containerWidth
         this.containerHeight = containerHeight
         this.minWidth = minWidth
@@ -32,9 +34,9 @@ class GridState {
     getState() {
         const grid = this.more ? calcGridExcludeLastRow(this.grid) : this.grid
 
-        const visibleGrid = calcVisibleGrid(grid, this.containerHeight, this.offset)
+        const [ visibleGrid, lastVisibleRowIndex ] = calcVisibleGrid(grid, this.containerHeight, this.offset)
 
-        const loadMoreAllowed = is(grid.getIn([ `rows`, -1 ]), visibleGrid.getIn([ `rows`, -1 ]))
+        const loadMoreAllowed = grid.get(`rows`).size - 1 - this.buffer <= lastVisibleRowIndex
 
         return {
             loadMoreAllowed,

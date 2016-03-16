@@ -99,7 +99,14 @@ describe(`react-adaptive-grid`, () => {
 
         it(`should get initial state`, () => {
             const padding = rndoam.number()
-            const gridState = new GridState({padding})
+            const grid = Map({
+                rows: List([
+                    Map(),
+                    Map()
+                ])
+            })
+
+            const gridState = new GridState({grid, padding})
             const offset = rndoam.number()
             const height = rndoam.number()
             const rows = List([
@@ -108,10 +115,10 @@ describe(`react-adaptive-grid`, () => {
                 })
             ])
 
-            calcVisibleGridSpy.andReturn(Map({
+            calcVisibleGridSpy.andReturn([ Map({
                 rows,
                 height
-            }))
+            }), 0 ])
 
             expect(gridState.getState())
                 .toEqual({
@@ -147,9 +154,9 @@ describe(`react-adaptive-grid`, () => {
 
             gridState.getState()
 
-            const {arguments: args} = calcVisibleGridSpy.calls[0]
+            const {arguments: args} = calcVisibleGridSpy.calls[ 0 ]
 
-            expect(args[0])
+            expect(args[ 0 ])
                 .toBe(gridExcludeLastRow)
         })
 
@@ -165,7 +172,27 @@ describe(`react-adaptive-grid`, () => {
                 grid
             })
 
-            calcVisibleGridSpy.andReturn(grid)
+            calcVisibleGridSpy.andReturn([ grid, 1 ])
+
+            expect(gridState.getState().loadMoreAllowed).toBeTruthy()
+        })
+
+        it(`should allow to load more with buffer`, () => {
+            const grid = Map({
+                rows: List([
+                    Map(),
+                    Map(),
+                    Map(),
+                    Map()
+                ])
+            })
+
+            const gridState = new GridState({
+                grid,
+                buffer: 3
+            })
+
+            calcVisibleGridSpy.andReturn([ grid, 1 ])
 
             expect(gridState.getState().loadMoreAllowed).toBeTruthy()
         })

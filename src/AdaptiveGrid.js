@@ -16,10 +16,11 @@ class AdaptiveGrid extends Component {
     }
 
     render() {
-        const {additionalHeight, items, minWidth, padding, offsetLeft, load, loading, more} = this.props
+        const {additionalHeight, buffer, items, minWidth, padding, offsetLeft, load, loading, more} = this.props
 
         const displayProps = {
             additionalHeight,
+            buffer,
             items,
             minWidth,
             padding,
@@ -36,6 +37,7 @@ class AdaptiveGrid extends Component {
 }
 
 AdaptiveGrid.defaultProps = {
+    buffer: 0,
     offsetLeft: 0,
     padding: 0,
     load: () => null,
@@ -53,6 +55,7 @@ AdaptiveGrid.childContextTypes = {
 AdaptiveGrid.propTypes = {
     ItemComponent: PropTypes.func.isRequired,
     additionalHeight: PropTypes.number,
+    buffer: PropTypes.number,
     minWidth: PropTypes.number.isRequired,
     items: PropTypes.instanceOf(List).isRequired,
     padding: PropTypes.number,

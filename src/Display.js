@@ -50,8 +50,8 @@ class Display extends Component {
 
     constructor(props) {
         super()
-        const {additionalHeight, minWidth, offsetLeft, padding, more} = props
-        this.gridState = gridStateFactory({additionalHeight, minWidth, offsetLeft, padding, more})
+        const {additionalHeight, buffer, minWidth, offsetLeft, padding, more} = props
+        this.gridState = gridStateFactory({additionalHeight, buffer, minWidth, offsetLeft, padding, more})
 
         this.state = this.gridState.getState()
     }

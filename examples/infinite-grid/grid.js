@@ -180,6 +180,7 @@
 	                }, 1000);
 	            };
 	            var props = _extends({}, defaultProps, this.state, {
+	                buffer: 5,
 	                load: load
 	            });
 
@@ -15767,6 +15768,7 @@
 	        value: function render() {
 	            var _props2 = this.props;
 	            var additionalHeight = _props2.additionalHeight;
+	            var buffer = _props2.buffer;
 	            var items = _props2.items;
 	            var minWidth = _props2.minWidth;
 	            var padding = _props2.padding;
@@ -15777,6 +15779,7 @@
 
 	            var displayProps = {
 	                additionalHeight: additionalHeight,
+	                buffer: buffer,
 	                items: items,
 	                minWidth: minWidth,
 	                padding: padding,
@@ -15794,6 +15797,7 @@
 	}(_react.Component);
 
 	AdaptiveGrid.defaultProps = {
+	    buffer: 0,
 	    offsetLeft: 0,
 	    padding: 0,
 	    load: function load() {
@@ -15813,6 +15817,7 @@
 	AdaptiveGrid.propTypes = {
 	    ItemComponent: _react.PropTypes.func.isRequired,
 	    additionalHeight: _react.PropTypes.number,
+	    buffer: _react.PropTypes.number,
 	    minWidth: _react.PropTypes.number.isRequired,
 	    items: _react.PropTypes.instanceOf(_immutable.List).isRequired,
 	    padding: _react.PropTypes.number,
@@ -15960,12 +15965,13 @@
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Display).call(this));
 
 	        var additionalHeight = props.additionalHeight;
+	        var buffer = props.buffer;
 	        var minWidth = props.minWidth;
 	        var offsetLeft = props.offsetLeft;
 	        var padding = props.padding;
 	        var more = props.more;
 
-	        _this.gridState = (0, _gridStateFactory2.default)({ additionalHeight: additionalHeight, minWidth: minWidth, offsetLeft: offsetLeft, padding: padding, more: more });
+	        _this.gridState = (0, _gridStateFactory2.default)({ additionalHeight: additionalHeight, buffer: buffer, minWidth: minWidth, offsetLeft: offsetLeft, padding: padding, more: more });
 
 	        _this.state = _this.gridState.getState();
 	        return _this;
@@ -16189,6 +16195,32 @@
 	    }return target;
 	};
 
+	var _slicedToArray = function () {
+	    function sliceIterator(arr, i) {
+	        var _arr = [];var _n = true;var _d = false;var _e = undefined;try {
+	            for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+	                _arr.push(_s.value);if (i && _arr.length === i) break;
+	            }
+	        } catch (err) {
+	            _d = true;_e = err;
+	        } finally {
+	            try {
+	                if (!_n && _i["return"]) _i["return"]();
+	            } finally {
+	                if (_d) throw _e;
+	            }
+	        }return _arr;
+	    }return function (arr, i) {
+	        if (Array.isArray(arr)) {
+	            return arr;
+	        } else if (Symbol.iterator in Object(arr)) {
+	            return sliceIterator(arr, i);
+	        } else {
+	            throw new TypeError("Invalid attempt to destructure non-iterable instance");
+	        }
+	    };
+	}();
+
 	var _createClass = function () {
 	    function defineProperties(target, props) {
 	        for (var i = 0; i < props.length; i++) {
@@ -16215,6 +16247,8 @@
 
 	        var _ref$additionalHeight = _ref.additionalHeight;
 	        var additionalHeight = _ref$additionalHeight === undefined ? 0 : _ref$additionalHeight;
+	        var _ref$buffer = _ref.buffer;
+	        var buffer = _ref$buffer === undefined ? 0 : _ref$buffer;
 	        var _ref$containerWidth = _ref.containerWidth;
 	        var containerWidth = _ref$containerWidth === undefined ? 0 : _ref$containerWidth;
 	        var _ref$containerHeight = _ref.containerHeight;
@@ -16238,6 +16272,7 @@
 	        _classCallCheck(this, GridState);
 
 	        this.additionalHeight = additionalHeight;
+	        this.buffer = buffer;
 	        this.containerWidth = containerWidth;
 	        this.containerHeight = containerHeight;
 	        this.minWidth = minWidth;
@@ -16253,9 +16288,14 @@
 	        value: function getState() {
 	            var grid = this.more ? (0, _gridCalculations.calcGridExcludeLastRow)(this.grid) : this.grid;
 
-	            var visibleGrid = (0, _gridCalculations.calcVisibleGrid)(grid, this.containerHeight, this.offset);
+	            var _calcVisibleGrid = (0, _gridCalculations.calcVisibleGrid)(grid, this.containerHeight, this.offset);
 
-	            var loadMoreAllowed = (0, _immutable.is)(grid.getIn(['rows', -1]), visibleGrid.getIn(['rows', -1]));
+	            var _calcVisibleGrid2 = _slicedToArray(_calcVisibleGrid, 2);
+
+	            var visibleGrid = _calcVisibleGrid2[0];
+	            var lastVisibleRowIndex = _calcVisibleGrid2[1];
+
+	            var loadMoreAllowed = grid.get('rows').size - 1 - this.buffer <= lastVisibleRowIndex;
 
 	            return _extends({
 	                loadMoreAllowed: loadMoreAllowed,
@@ -16705,26 +16745,26 @@
 
 	var calcVisibleGrid = exports.calcVisibleGrid = function calcVisibleGrid(grid, visibleAreaHeight, offset) {
 
-	    return grid.update('rows', function (r) {
+	    var lastVisibleRowIndex = 0;
+	    return [grid.update('rows', function (r) {
 	        var acc = (0, _immutable.List)();
-	        r.some(function (it) {
+	        r.some(function (it, i) {
 	            var top = it.get('top');
 	            var height = it.get('height');
 
-	            if (top >= offset) {
+	            if (top >= offset || top + height > offset) {
 	                if (top >= offset + visibleAreaHeight) {
 	                    return true;
 	                }
 
-	                acc = acc.push(it);
-	            } else if (top + height > offset) {
+	                lastVisibleRowIndex = i;
 	                acc = acc.push(it);
 	            }
 
 	            return false;
 	        });
 	        return acc;
-	    });
+	    }), lastVisibleRowIndex];
 	};
 
 	var insertItems = exports.insertItems = function insertItems(grid, items, additionalHeight, containerWidth, minWidth, offsetLeft) {

@@ -89,6 +89,7 @@ describe(`react-adaptive-grid`, () => {
             const props = {
                 minWidth: rndoam.number(),
                 additionalHeight: rndoam.number(),
+                buffer: rndoam.number(),
                 offsetLeft: rndoam.number(),
                 padding: rndoam.number(),
                 more: true
