@@ -1,4 +1,4 @@
-import {List, Map, is} from 'immutable'
+import {List, Map} from 'immutable'
 import {calcGrid, calcGridExcludeLastRow, calcVisibleGrid, insertItems} from './gridCalculations'
 
 class GridState {
