@@ -44,6 +44,7 @@ const props = {
     ItemComponent,
     items,
     minWidth,
+    buffer,
     load: () => ( /* load more items */ ),
     more: Boolean, // has more
     loading: Boolean
