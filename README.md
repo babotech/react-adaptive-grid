@@ -16,7 +16,7 @@ npm install --save react-adaptive-grid
 ```javascript
 import Grid from 'react-adaptive-grid'
 
-// Regular array or Immutable.js List
+// Immutable.js List
 const items = List([
     Map({id:1, foo: 'bar', width: 200, height: 300}),
     ...
